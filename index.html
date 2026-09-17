@@ -7,19 +7,19 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap">
 <style>
   :root{
     --app-bg:#eef1f5;--ui-bg:#fff;--ui-text:#2b3038;--ui-text-dim:#6b7889;
     --ui-border:#e3e8ee;--ui-hover:#f4f7fb;--ui-active:#eaf2ff;
     --bg:#fff;--line:#dbe6f5;--gap:36px;
-    --font:'Xingkai SC','STXingkai','华文行楷','KaiTi','楷体','Kaiti SC',cursive,sans-serif;
+    --font:'LXGW WenKai','KaiTi','楷体','Kaiti SC',cursive,sans-serif;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;margin:0;}
   body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--app-bg);color:var(--ui-text);overflow:hidden;transition:background-color .25s,color .25s;}
   .app{display:flex;height:100vh;}
-
-  /* ===== 左侧侧栏（可折叠到 36px，折叠后按钮垂直居中）===== */
   .sidebar{
     width:240px;flex:0 0 240px;background:var(--ui-bg);
     border-right:1px solid var(--ui-border);
@@ -35,7 +35,6 @@
   }
   .sidebar.collapsed .side-head > *:not(.sb-toggle){display:none !important;}
   .sidebar.collapsed .sb-toggle{display:flex;position:static;}
-
   .side-head{
     display:flex;align-items:center;gap:5px;
     padding:10px 10px 8px;
@@ -55,8 +54,6 @@
     cursor:pointer;padding:3px 6px;border-radius:5px;font-size:13.5px;
   }
   .folder-name:hover{background:var(--ui-hover);}
-
-  /* 最近文件夹面板 */
   .recent-panel{
     max-height:0;overflow:hidden;
     transition:max-height .22s ease;
@@ -75,7 +72,6 @@
   .recent-item .ri-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .recent-item .ri-count{font-size:10.5px;color:var(--ui-text-dim);flex:0 0 auto;}
   .recent-empty{padding:10px 12px;font-size:11px;color:var(--ui-text-dim);text-align:center;}
-
   .document-list{flex:1;overflow:auto;padding:6px 8px 8px;}
   .doc-item{
     position:relative;padding:9px 10px;border-radius:9px;cursor:pointer;
@@ -92,8 +88,6 @@
   }
   .doc-item:hover .doc-del{display:block;}
   .doc-del:hover{color:#e03131;background:rgba(224,49,49,.12);}
-
-  /* 新建文件行 */
   .new-doc-row{padding:6px 8px 4px;}
   .new-doc-btn{
     width:100%;padding:9px;border-radius:9px;
@@ -102,8 +96,6 @@
     font-family:inherit;
   }
   .new-doc-btn:hover{background:#2f6ae8;}
-
-  /* 登录区（在新建文件下面） */
   .side-foot{padding:4px 10px 10px;}
   .side-foot button{
     width:100%;padding:7px;border-radius:8px;
@@ -113,8 +105,6 @@
   }
   .side-foot button:hover{background:var(--ui-hover);}
   .auth-status{font-size:10.5px;color:var(--ui-text-dim);text-align:center;margin-top:5px;}
-
-  /* ===== 左侧 Tab 栏（竖直，可折叠）===== */
   .tabs-sidebar{
     width:170px;flex:0 0 170px;
     background:var(--ui-bg);
@@ -169,10 +159,7 @@
     cursor:pointer;font-family:inherit;flex:0 0 auto;
   }
   .new-tab-btn:hover{background:var(--ui-hover);color:#3d7bfd;border-color:#8fb6ff;}
-
-  /* ===== 主区 ===== */
   .main{flex:1;display:flex;flex-direction:column;min-width:0;}
-
   .toolbar{
     display:flex;align-items:center;gap:5px;flex-wrap:wrap;
     padding:6px 10px;background:var(--ui-bg);
@@ -194,14 +181,12 @@
   .ctl input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
   .ctl input[type=color]::-webkit-color-swatch{border:none;border-radius:4px;}
   .ctl input[type=range]{width:58px;accent-color:#3d7bfd;}
-
   .ctl.color-ctl::after{
     content:'';display:inline-block;width:5px;height:5px;
     border-radius:50%;margin-left:3px;flex:0 0 auto;box-sizing:border-box;
   }
   .ctl.color-ctl.following::after{border:1px solid var(--ui-text-dim);background:transparent;}
   .ctl.color-ctl.customized::after{background:#3d7bfd;}
-
   .toolbar button{
     padding:5px 8px;border-radius:7px;border:1px solid var(--ui-border);
     background:var(--ui-bg);font-size:12px;color:var(--ui-text);
@@ -216,7 +201,6 @@
   .toolbar button.hl{background:rgba(255,224,102,.18);border-color:rgba(255,180,60,.45);color:#8a6d1a;}
   .toolbar button.hl:hover{background:rgba(255,224,102,.35);}
   body[data-theme="black"] .toolbar button.hl{color:#ffd873;}
-
   #drawBtn{background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.3);color:#5b5fc7;}
   #drawBtn:hover{background:rgba(99,102,241,.2);}
   #drawBtn.active{
@@ -225,7 +209,6 @@
   }
   body[data-theme="black"] #drawBtn{color:#a8aaff;}
   #readingBtn.active{background:#3d7bfd;border-color:#3d7bfd;color:#fff;}
-
   .hist-btn{width:30px;height:24px;padding:0 !important;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;}
   .toolbar .spacer{flex:1;}
   .fmt-btn{
@@ -253,8 +236,6 @@
   }
   .font-anchor-btn:hover{background:var(--ui-hover);color:#3d7bfd;}
   .font-anchor-btn.has-anchors{color:#3d7bfd;border-color:#8fb6ff;background:rgba(61,123,253,.08);}
-
-  /* 状态栏 */
   .statusbar{
     height:30px;flex:0 0 30px;display:flex;align-items:center;gap:12px;
     padding:0 12px;background:var(--ui-bg);
@@ -272,8 +253,6 @@
     font-family:inherit;
   }
   .goal-btn:hover{color:#3d7bfd;}
-
-  /* 时钟 */
   .clock-display{
     position:fixed;right:16px;bottom:44px;
     background:var(--ui-bg);color:var(--ui-text);
@@ -288,8 +267,6 @@
     padding:1px 5px;border-radius:4px;background:rgba(61,123,253,.12);
   }
   .clock-time{font-weight:600;font-variant-numeric:tabular-nums;}
-
-  /* 画布 */
   .canvas-wrap{flex:1;overflow:auto;padding:28px 20px 70px;}
   .page{
     position:relative;width:880px;margin:0 auto;min-height:1200px;
@@ -314,7 +291,6 @@
   .block-layer,.anno-box-layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;}
   .block-layer{z-index:3;}
   .anno-box-layer{z-index:4;}
-
   body.draw-mode .block,
   body.draw-mode .image-item,
   body.draw-mode .drawing-item,
@@ -327,14 +303,12 @@
   body.draw-mode .toolbar,
   body.draw-mode .statusbar,
   body.draw-mode .tabs-sidebar{position:relative;z-index:10000;}
-
   .kw-hl{border-radius:2px;padding:0 1px;font-weight:600;}
   .blur-text{
     filter:blur(4.5px);cursor:pointer;transition:filter .2s;
     border-radius:3px;background:rgba(120,120,140,.08);padding:0 2px;
   }
   .blur-text:hover{filter:blur(3.5px);}
-
   .timeline-panel{
     position:absolute;background:rgba(255,255,255,.7);
     border:1px solid rgba(120,140,170,.25);border-left:3px solid #3d7bfd;
@@ -360,7 +334,6 @@
     font-size:14px;line-height:1;padding:0;font-family:inherit;
   }
   .tl-del:hover{color:#e03131;background:rgba(224,49,49,.12);}
-
   .image-item{
     position:absolute;pointer-events:auto;user-select:none;
     outline:none;border-radius:4px;cursor:grab;touch-action:none;
@@ -398,7 +371,6 @@
     font-size:14px;display:flex;align-items:center;justify-content:center;
     font-family:inherit;
   }
-
   .drawing-item{
     position:absolute;pointer-events:auto;user-select:none;
     outline:none;cursor:grab;touch-action:none;
@@ -420,7 +392,6 @@
     opacity:0;transition:opacity .15s;pointer-events:auto;
   }
   .drawing-item:hover .drawing-actions{opacity:1;}
-
   .block{
     position:absolute;font-family:var(--font);line-height:var(--gap);
     white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
@@ -459,14 +430,12 @@
   .block-del:hover{background:rgba(224,49,49,.28);}
   .block-reset{background:var(--ui-hover);color:var(--ui-text-dim);}
   .block-reset:hover{background:var(--ui-active);}
-
   .wrap-line{
     position:absolute;font-family:var(--font);line-height:var(--gap);
     white-space:pre;overflow:hidden;pointer-events:auto;cursor:text;
     user-select:text;border-radius:2px;
   }
   .wrap-line:hover{box-shadow:inset 0 0 0 1px rgba(61,123,253,.18);}
-
   .anno-wrap{position:absolute;display:flex;align-items:center;pointer-events:auto;z-index:4;}
   .anno-handle{
     width:11px;height:11px;border-radius:50%;background:#e03131;
@@ -509,8 +478,6 @@
     background:var(--bg);cursor:text;
   }
   .anno-box:empty::before{content:attr(data-ph);color:currentColor;opacity:.4;pointer-events:none;}
-
-  /* 弹窗 */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:99;}
   .modal.show{display:flex;}
   .modal-card{
@@ -540,7 +507,6 @@
   .modal-actions button:hover{background:var(--ui-hover);}
   .modal-actions button.primary{background:#3d7bfd;border-color:#3d7bfd;color:#fff;}
   .modal-actions button.danger{background:rgba(224,49,49,.12);border-color:rgba(224,49,49,.3);color:#d92c2c;}
-
   .setting-label{font-size:12px;color:var(--ui-text-dim);font-weight:600;margin:14px 0 8px;}
   .theme-tabs{display:flex;gap:6px;}
   .theme-tabs button{
@@ -565,8 +531,6 @@
   .color-grid input[type=color]::-webkit-color-swatch{border:none;border-radius:3px;}
   .custom-section{display:none;}
   .custom-section.show{display:block;}
-
-  /* 文件夹总览 */
   .folder-overview-grid{
     display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
     gap:12px;margin:14px 0;max-height:380px;overflow-y:auto;padding:4px;
@@ -602,8 +566,6 @@
   }
   .search-result-row .sr-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .search-result-row .sr-path{font-size:11px;color:var(--ui-text-dim);flex:0 0 auto;}
-
-  /* 右键菜单 */
   .context-menu{
     position:fixed;background:var(--ui-bg);color:var(--ui-text);
     border:1px solid var(--ui-border);border-radius:8px;padding:4px;
@@ -620,8 +582,6 @@
   .context-menu button.danger{color:#d92c2c;}
   .context-menu button.danger:hover{background:rgba(224,49,49,.12);}
   .context-menu .sep-line{height:1px;background:var(--ui-border);margin:4px 0;}
-
-  /* 缩略图 */
   .thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px;}
   .thumb-card{
     padding:10px;border-radius:9px;border:1px solid var(--ui-border);
@@ -630,8 +590,6 @@
   .thumb-card:hover{background:var(--ui-hover);border-color:#8fb6ff;}
   .thumb-title{font-size:13px;font-weight:600;color:var(--ui-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .thumb-meta{font-size:11px;color:var(--ui-text-dim);margin-top:4px;}
-
-  /* 字体面板 */
   .font-section{margin-bottom:14px;}
   .font-section-title{font-size:12px;color:var(--ui-text-dim);font-weight:600;margin-bottom:6px;}
   .font-buttons{display:flex;flex-wrap:wrap;gap:6px;}
@@ -642,8 +600,6 @@
   }
   .font-btn:hover{background:var(--ui-hover);}
   .font-btn.active{background:#3d7bfd;border-color:#3d7bfd;color:#fff;}
-
-  /* 音乐 */
   .music-panel{
     position:fixed;right:18px;bottom:76px;width:320px;
     background:var(--ui-bg);color:var(--ui-text);
@@ -701,7 +657,6 @@
     background:var(--ui-bg);color:var(--ui-text);cursor:pointer;
     font-size:12.5px;font-family:inherit;
   }
-
   body.reading-mode .sidebar,
   body.reading-mode .toolbar,
   body.reading-mode .statusbar,
@@ -716,10 +671,8 @@
     font-family:inherit;backdrop-filter:blur(6px);
   }
   body.reading-mode .reading-exit{display:inline-flex;}
-
   ::highlight(search-light){background-color:#b7dcff;color:#0a2540;}
   ::highlight(search-dark){background-color:#7a1f1f;color:#ffe8e8;}
-
   .toast{
     position:fixed;left:50%;bottom:60px;transform:translate(-50%,14px);
     background:rgba(30,40,55,.92);color:#fff;font-size:12.5px;
@@ -727,13 +680,11 @@
     transition:all .25s;z-index:500;max-width:80vw;text-align:center;
   }
   .toast.show{opacity:1;transform:translate(-50%,0);}
-
   .export-lines-row{
     display:flex;align-items:center;gap:8px;margin-top:12px;
     font-size:13px;cursor:pointer;user-select:none;
   }
   .export-lines-row input[type=checkbox]{width:16px;height:16px;accent-color:#3d7bfd;cursor:pointer;}
-
   .anchor-list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px;}
   .anchor-chip{
     display:inline-flex;align-items:center;gap:4px;padding:4px 10px;
@@ -744,7 +695,6 @@
     width:14px;height:14px;padding:0;border:none;background:transparent;
     color:#3d7bfd;cursor:pointer;font-size:12px;line-height:1;font-family:inherit;
   }
-
   .region-group{margin-bottom:12px;}
   .region-group-title{font-size:11.5px;color:var(--ui-text-dim);font-weight:600;margin-bottom:6px;}
   .region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;}
@@ -757,13 +707,11 @@
   .region-item.active{background:#3d7bfd;border-color:#3d7bfd;color:#fff;}
   .region-item .ri-name{font-weight:600;}
   .region-item .ri-time{font-size:11px;opacity:.75;font-variant-numeric:tabular-nums;}
-
   .goal-row{display:flex;gap:10px;align-items:flex-end;margin-top:8px;}
   .goal-row .goal-field{flex:1;}
   .goal-opt{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ui-text);margin-top:8px;cursor:pointer;user-select:none;}
   .goal-hint{font-size:11.5px;color:var(--ui-text-dim);margin-top:6px;line-height:1.5;}
   .goal-current{font-size:12px;color:var(--ui-text-dim);margin-top:10px;padding-top:10px;border-top:1px dashed var(--ui-border);}
-
   .export-option-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
   .export-option{
     display:flex;align-items:flex-start;gap:8px;padding:10px;
@@ -777,7 +725,6 @@
 <body>
 
 <div class="app">
-  <!-- 左侧侧栏 -->
   <aside class="sidebar" id="sidebar">
     <div class="side-head">
       <button id="sbToggle" class="sb-toggle" title="收起/展开">◀</button>
@@ -794,7 +741,6 @@
     </div>
   </aside>
 
-  <!-- 左侧 Tab 栏（竖直） -->
   <aside class="tabs-sidebar" id="tabsSidebar">
     <div class="tabs-header">
       <span>标签页</span>
@@ -804,7 +750,6 @@
     <button class="new-tab-btn" id="newTabBtn">＋ 新标签页</button>
   </aside>
 
-  <!-- 主区 -->
   <div class="main">
     <header class="toolbar">
       <button id="undoBtn" class="hist-btn" title="撤销">↶</button>
@@ -906,7 +851,6 @@
   </div>
 </div>
 
-<!-- 右键菜单 -->
 <div class="context-menu" id="folderContextMenu">
   <button data-action="rename">重命名</button>
   <button data-action="duplicate">复制副本</button>
@@ -915,7 +859,6 @@
   <button data-action="delete" class="danger">删除</button>
 </div>
 
-<!-- 文件夹总览 -->
 <div class="modal" id="folderOverviewModal">
   <div class="modal-card wide">
     <h3>📂 文件夹总览</h3>
@@ -929,7 +872,6 @@
   </div>
 </div>
 
-<!-- 缩略图 -->
 <div class="modal" id="thumbnailModal">
   <div class="modal-card wide">
     <h3 id="thumbnailTitle">缩略图</h3>
@@ -940,13 +882,12 @@
   </div>
 </div>
 
-<!-- 字体 -->
 <div class="modal" id="fontModal">
   <div class="modal-card">
     <h3>字体设置</h3>
-    <p class="hint" style="margin-top:0;">选中文字后点击字体应用；未选中则应用到整个标签页的默认字体。</p>
+    <p class="hint" style="margin-top:0;">选中文字后点字体应用；未选中则改这个标签页的默认字体，只对之后输入生效。</p>
     <div class="font-section">
-      <div class="font-section-title">中文字体</div>
+      <div class="font-section-title">中文字体（Web 字体，跨设备一致）</div>
       <div class="font-buttons" id="cnFontBtns"></div>
     </div>
     <div class="font-section">
@@ -968,7 +909,6 @@
   </div>
 </div>
 
-<!-- 字号锚点 -->
 <div class="modal" id="anchorModal">
   <div class="modal-card">
     <h3>字号锚点</h3>
@@ -988,7 +928,6 @@
   </div>
 </div>
 
-<!-- 地区 -->
 <div class="modal" id="regionModal">
   <div class="modal-card">
     <h3>选择地区时间</h3>
@@ -1004,7 +943,6 @@
   </div>
 </div>
 
-<!-- 日目标 -->
 <div class="modal" id="dailyGoalModal">
   <div class="modal-card">
     <h3>📅 日目标</h3>
@@ -1027,7 +965,6 @@
   </div>
 </div>
 
-<!-- 周目标 -->
 <div class="modal" id="weeklyGoalModal">
   <div class="modal-card">
     <h3>🗓 周目标</h3>
@@ -1051,7 +988,6 @@
   </div>
 </div>
 
-<!-- 设置 -->
 <div class="modal" id="settingsModal">
   <div class="modal-card">
     <h3>设置</h3>
@@ -1209,14 +1145,14 @@
     </div>
   </div>
 </div>
-
 <script>
 (function(){
 'use strict';
 
-const FONT_STACK = "'Xingkai SC','STXingkai','华文行楷','KaiTi','楷体','Kaiti SC',cursive,sans-serif";
+const FONT_STACK = "'LXGW WenKai','KaiTi','楷体','Kaiti SC',cursive,sans-serif";
 const GAP = 36, NS = 'http://www.w3.org/2000/svg';
 const LS_KEY = 'xingkai_notes_v3', LS_CLIENT = 'xingkai_client_id', LS_GLOBAL = 'xingkai_global_v3';
+const LS_TOKEN = 'xingkai_token_v3';
 const DRIVE_NAME = 'xingkai-notes.json', SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 const MIN_W = 120, MIN_IMG_W = 60, MIN_DRW_W = 40;
 const TOP_ROWS = 15, FULL_RATIO = 0.65, DEFAULT_KW_COLOR = '#a855f7';
@@ -1238,13 +1174,14 @@ const REGIONS = {
 const FAVORITES = ['CN','DE','US'];
 
 const CN_FONTS = [
-  {name:'行楷',stack:"'Xingkai SC','STXingkai','华文行楷',cursive"},
-  {name:'楷体',stack:"'KaiTi','楷体','Kaiti SC',serif"},
-  {name:'宋体',stack:"'SimSun','宋体',serif"},
-  {name:'黑体',stack:"'SimHei','黑体',sans-serif"},
-  {name:'雅黑',stack:"'Microsoft YaHei','微软雅黑',sans-serif"},
-  {name:'仿宋',stack:"'FangSong','仿宋',serif"},
-  {name:'隶书',stack:"'LiSu','隶书',cursive"},
+  {name:'霞鹜文楷',stack:"'LXGW WenKai',cursive"},
+  {name:'马善政',stack:"'Ma Shan Zheng',cursive"},
+  {name:'站酷小薇',stack:"'ZCOOL XiaoWei',serif"},
+  {name:'思源宋体',stack:"'Noto Serif SC',serif"},
+  {name:'思源黑体',stack:"'Noto Sans SC',sans-serif"},
+  {name:'系统楷体',stack:"'KaiTi','楷体','Kaiti SC',serif"},
+  {name:'系统宋体',stack:"'SimSun','宋体',serif"},
+  {name:'系统黑体',stack:"'SimHei','黑体',sans-serif"},
   {name:'默认',stack:""}
 ];
 const EN_FONTS = [
@@ -1307,8 +1244,14 @@ const appState = {
 const globalState = { sound:null, musicList:[], musicMode:'order', musicIndex:-1, paperTexture:null };
 const drawState = { active:false, strokes:[], currentStroke:null, svgRoot:null, strokeGroup:null, clipRect:null };
 const historyState = { undo:[], redo:[], maxSize:60, maxBytes:50*1024*1024, totalBytes:0, suppress:false };
-const LS_TOKEN = 'xingkai_token_v3';
-let accessToken=null, tokenExpire=0, driveFileId=null;
+let historyTimer=null, accessToken=null, tokenExpire=0, driveFileId=null;
+let saveTimer=null, toastTimer=null, savedRange=null;
+let readingMode=false, recentPanelOpen=false;
+let ctrlHeld=false, lastTabCharsCount=0, lastStatDateKey='', clockTimer=null;
+let contextFolderId=null;
+let fontPanelSavedRange=null;
+let fontPanelSavedOffsets=null;
+
 try{
   const _t = JSON.parse(localStorage.getItem(LS_TOKEN) || 'null');
   if(_t && _t.token && _t.expire > Date.now()){
@@ -1316,10 +1259,6 @@ try{
     tokenExpire = _t.expire;
   }
 }catch(e){}
-let saveTimer=null, toastTimer=null, savedRange=null;
-let readingMode=false, recentPanelOpen=false;
-let ctrlHeld=false, lastTabCharsCount=0, lastStatDateKey='', clockTimer=null;
-let contextFolderId=null;
 
 const searchState = { scope:'current', query:'' };
 let musicAudio=null;
@@ -3232,32 +3171,40 @@ function importHtmlIntoNewDocument(html, title){
   resetCharTracking(); scheduleSave();
   toast('已导入');
 }
+function getFontFamilyFromSelection(){
+  try{
+    let range = null;
+    if(fontPanelSavedRange && fontPanelSavedRange.startContainer && fontPanelSavedRange.startContainer.isConnected){
+      range = fontPanelSavedRange;
+    } else {
+      const sel = window.getSelection();
+      if(sel && sel.rangeCount>0 && !sel.isCollapsed) range = sel.getRangeAt(0);
+    }
+    if(!range) return null;
+    let node = range.startContainer;
+    let el = node.nodeType===1 ? node : node.parentElement;
+    let found = null;
+    while(el && el !== document.body){
+      if(el.style && el.style.fontFamily){ found = el.style.fontFamily; break; }
+      el = el.parentElement;
+    }
+    if(!found) return null;
+    return found.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
+  }catch(e){ return null; }
+}
 function buildFontButtons(container, fonts, key){
   container.innerHTML = '';
   const tab = currentTab();
   let cur = (tab && tab.settings && tab.settings.fonts && tab.settings.fonts[key]) || '';
-  // 如果当前有选区，优先反映选区第一处的字体
-  try{
-    const sel = window.getSelection();
-    if(sel && !sel.isCollapsed && sel.rangeCount>0){
-      const range = sel.getRangeAt(0);
-      let node = range.startContainer;
-      let el = node.nodeType===1 ? node : node.parentElement;
-      if(el && el.closest && el.closest('.block')){
-        const fam = window.getComputedStyle(el).fontFamily || '';
-        if(fam){
-          // 把浏览器的 font-family 字符串跟预设对比，找最匹配的
-          const first = fam.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
-          const matched = fonts.find(f=>{
-            if(!f.stack) return false;
-            const fFirst = f.stack.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
-            return fFirst === first;
-          });
-          cur = matched ? matched.stack : '';
-        }
-      }
-    }
-  }catch(e){}
+  const selFam = getFontFamilyFromSelection();
+  if(selFam){
+    const matched = fonts.find(f=>{
+      if(!f.stack) return false;
+      const fFirst = f.stack.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
+      return fFirst === selFam;
+    });
+    cur = matched ? matched.stack : '__nomatch__';
+  }
   fonts.forEach(f=>{
     const b = document.createElement('button');
     b.className = 'font-btn' + (f.stack === cur ? ' active' : '');
@@ -3268,43 +3215,164 @@ function buildFontButtons(container, fonts, key){
     container.appendChild(b);
   });
 }
+function clearFontFamilyInRange(range, blockEl){
+  try{
+    const walker = document.createTreeWalker(blockEl, NodeFilter.SHOW_ELEMENT);
+    const toClear = [];
+    let node;
+    while(node = walker.nextNode()){
+      if(node.style && node.style.fontFamily){
+        try{ if(range.intersectsNode(node)) toClear.push(node); }catch(e){}
+      }
+    }
+    toClear.forEach(el=>{
+      el.style.fontFamily = '';
+      if(!el.getAttribute('style')) el.removeAttribute('style');
+    });
+  }catch(e){}
+}
+function applyEnglishOnlyFontByOffset(blockEl, startOffset, endOffset, stack){
+  const walker = document.createTreeWalker(blockEl, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while(n = walker.nextNode()) nodes.push(n);
+
+  const isEn = ch => {
+    const c = ch.charCodeAt(0);
+    return c >= 0x20 && c <= 0x7E;
+  };
+
+  let cum = 0;
+  for(const tn of nodes){
+    if(!tn.parentNode) continue;
+    const text = tn.nodeValue;
+    if(!text) continue;
+    const nodeStart = cum;
+    const nodeEnd = cum + text.length;
+    cum = nodeEnd;
+
+    const segStart = Math.max(0, startOffset - nodeStart);
+    const segEnd = Math.min(text.length, endOffset - nodeStart);
+    if(segStart >= segEnd) continue;
+
+    const frag = document.createDocumentFragment();
+    if(segStart > 0) frag.appendChild(document.createTextNode(text.slice(0, segStart)));
+
+    let i = segStart;
+    while(i < segEnd){
+      const isAscii = isEn(text[i]);
+      let j = i;
+      while(j < segEnd && isEn(text[j]) === isAscii) j++;
+      const seg = text.slice(i, j);
+      if(isAscii){
+        const span = document.createElement('span');
+        span.style.fontFamily = stack;
+        span.textContent = seg;
+        frag.appendChild(span);
+      } else {
+        frag.appendChild(document.createTextNode(seg));
+      }
+      i = j;
+    }
+
+    if(segEnd < text.length) frag.appendChild(document.createTextNode(text.slice(segEnd)));
+    tn.parentNode.replaceChild(frag, tn);
+  }
+}
 function applyFontChoice(key, stack){
   const tab = currentTab(); if(!tab) return;
   if(!tab.settings.fonts) tab.settings.fonts = {chinese:'',english:'',other:'',emoji:''};
-  restoreSelection();
-  const sel = window.getSelection();
-  if(sel && !sel.isCollapsed && sel.rangeCount > 0){
-    const range = sel.getRangeAt(0);
+
+  let targetBlockEl = null;
+  let startOff = -1, endOff = -1;
+
+  if(fontPanelSavedOffsets){
+    targetBlockEl = blockLayer.querySelector(`.block[data-id="${fontPanelSavedOffsets.blockId}"]`);
+    if(targetBlockEl){
+      startOff = fontPanelSavedOffsets.start;
+      endOff = fontPanelSavedOffsets.end;
+    }
+  }
+
+  let range = fontPanelSavedRange;
+  if((!targetBlockEl || startOff < 0) && !range){
+    const sel = window.getSelection();
+    if(sel && sel.rangeCount>0 && !sel.isCollapsed) range = sel.getRangeAt(0);
+  }
+  if((!targetBlockEl || startOff < 0) && range){
     const sEl = range.startContainer.nodeType===1 ? range.startContainer : range.startContainer.parentElement;
     const blockEl = sEl && sEl.closest ? sEl.closest('.block') : null;
     if(blockEl){
-      const span = document.createElement('span');
-      span.style.fontFamily = stack || '';
-      try{ range.surroundContents(span); }
-      catch(err){
-        const frag = range.extractContents();
-        span.appendChild(frag);
-        range.insertNode(span);
+      targetBlockEl = blockEl;
+      try{
+        const preR = document.createRange();
+        preR.selectNodeContents(blockEl);
+        preR.setEnd(range.startContainer, range.startOffset);
+        startOff = preR.toString().length;
+        endOff = startOff + range.toString().length;
+      }catch(e){ startOff = -1; }
+    }
+  }
+
+  if(targetBlockEl && startOff >= 0 && endOff > startOff){
+    const blockEl = targetBlockEl;
+
+    if(key === 'english' && stack){
+      applyEnglishOnlyFontByOffset(blockEl, startOff, endOff, stack);
+      fontPanelSavedRange = null;
+      fontPanelSavedOffsets = null;
+      const b = tab.blocks.find(x=>x.id===blockEl.dataset.id);
+      if(b) b.html = getBlockHTML(blockEl);
+      scheduleSave();
+      toast('已应用英文字体（中文不变）');
+      refreshFontPanel();
+      return;
+    }
+
+    const usedRange = (range && range.startContainer && range.startContainer.isConnected)
+      ? range : fontPanelSavedRange;
+    if(usedRange){
+      clearFontFamilyInRange(usedRange, blockEl);
+      if(stack){
+        const span = document.createElement('span');
+        span.style.fontFamily = stack;
+        try{ usedRange.surroundContents(span); }
+        catch(err){
+          const frag = usedRange.extractContents();
+          span.appendChild(frag);
+          usedRange.insertNode(span);
+        }
+        try{
+          const nr = document.createRange();
+          nr.selectNodeContents(span);
+          const sel2 = window.getSelection();
+          sel2.removeAllRanges(); sel2.addRange(nr);
+          fontPanelSavedRange = nr.cloneRange();
+          const preR2 = document.createRange();
+          preR2.selectNodeContents(blockEl);
+          preR2.setEnd(nr.startContainer, nr.startOffset);
+          const s2 = preR2.toString().length;
+          fontPanelSavedOffsets = { blockId: blockEl.dataset.id, start: s2, end: s2 + nr.toString().length };
+        }catch(e){}
       }
       const b = tab.blocks.find(x=>x.id===blockEl.dataset.id);
       if(b) b.html = getBlockHTML(blockEl);
-      const nr = document.createRange();
-      nr.selectNodeContents(span);
-      sel.removeAllRanges(); sel.addRange(nr);
       scheduleSave();
-      toast('已应用字体');
+      toast(stack ? '已应用字体' : '已恢复默认字体');
+      refreshFontPanel();
+      return;
     }
-  } else {
-    tab.settings.fonts[key] = stack;
-    const fs = buildFontStack(tab.settings.fonts);
-    tab.blocks.forEach(b=>{
-      const el = blockLayer.querySelector(`.block[data-id="${b.id}"]`);
-      if(el) el.style.fontFamily = fs || FONT_STACK;
-    });
-    document.documentElement.style.setProperty('--font', fs || FONT_STACK);
-    scheduleSave();
-    toast('已设为默认字体');
   }
+
+  tab.settings.fonts[key] = stack;
+  const fs = buildFontStack(tab.settings.fonts);
+  tab.blocks.forEach(b=>{
+    const el = blockLayer.querySelector(`.block[data-id="${b.id}"]`);
+    if(el) el.style.fontFamily = fs || FONT_STACK;
+  });
+  document.documentElement.style.setProperty('--font', fs || FONT_STACK);
+  scheduleSave();
+  toast(stack ? '已设为默认字体' : '已恢复默认字体');
   refreshFontPanel();
 }
 function refreshFontPanel(){
@@ -3313,7 +3381,31 @@ function refreshFontPanel(){
   buildFontButtons($('otherFontBtns'), OTHER_FONTS, 'other');
   buildFontButtons($('emojiFontBtns'), EMOJI_FONTS, 'emoji');
 }
-function openFontModal(){ refreshFontPanel(); openModal('fontModal'); }
+function openFontModal(){
+  fontPanelSavedRange = null;
+  fontPanelSavedOffsets = null;
+  try{
+    const sel = window.getSelection();
+    if(sel && sel.rangeCount>0 && !sel.isCollapsed){
+      const range = sel.getRangeAt(0);
+      const sEl = range.startContainer.nodeType===1 ? range.startContainer : range.startContainer.parentElement;
+      const blockEl = sEl && sEl.closest ? sEl.closest('.block') : null;
+      if(blockEl){
+        fontPanelSavedRange = range.cloneRange();
+        try{
+          const preR = document.createRange();
+          preR.selectNodeContents(blockEl);
+          preR.setEnd(range.startContainer, range.startOffset);
+          const start = preR.toString().length;
+          const end = start + range.toString().length;
+          fontPanelSavedOffsets = { blockId: blockEl.dataset.id, start, end };
+        }catch(e){}
+      }
+    }
+  }catch(e){}
+  refreshFontPanel();
+  openModal('fontModal');
+}
 function updateAnchorBtnUI(){
   const btn = $('fontAnchorBtn');
   btn.classList.toggle('has-anchors', appState.fontSizeAnchors.length > 0);
@@ -4482,8 +4574,17 @@ function bindEvents(){
       }
     }
   }, true);
+  $('fontPickerBtn').addEventListener('mousedown', e=>e.preventDefault());
   $('fontPickerBtn').addEventListener('click', openFontModal);
-  $('fontClose').addEventListener('click', ()=>closeModal('fontModal'));
+  $('fontClose').addEventListener('click', ()=>{
+    try{
+      const sel = window.getSelection();
+      if(sel) sel.removeAllRanges();
+    }catch(e){}
+    fontPanelSavedRange = null;
+    fontPanelSavedOffsets = null;
+    closeModal('fontModal');
+  });
   $('fontReset').addEventListener('click', ()=>{
     const tab = currentTab(); if(!tab) return;
     tab.settings.fonts = {chinese:'',english:'',other:'',emoji:''};
