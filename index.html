@@ -1251,6 +1251,8 @@ let ctrlHeld=false, lastTabCharsCount=0, lastStatDateKey='', clockTimer=null;
 let contextFolderId=null;
 let fontPanelSavedRange=null;
 let fontPanelSavedOffsets=null;
+let pendingCopyAsPlain=false;
+let pendingPasteAsPlain=false;
 
 try{
   const _t = JSON.parse(localStorage.getItem(LS_TOKEN) || 'null');
@@ -3017,15 +3019,155 @@ function addBlock(){
   decorateBlock(el,b,tab); blockLayer.appendChild(el);
   updatePageHeight(); updateStatusBar(); el.focus(); scheduleSave();
 }
+
+/* ===== 复制/粘贴处理 ===== */
+
+function buildFormattedTextFromSelection(range){
+  const frag = range.cloneContents();
+  const holder = document.createElement('div');
+  holder.appendChild(frag);
+  holder.querySelectorAll('.block-resize, .block-actions, .image-resize, .image-actions, .drawing-resize, .drawing-actions').forEach(el=>el.remove());
+  const lines = [];
+  let buf = '';
+  function flush(){ if(buf){ lines.push(buf); buf = ''; } }
+  function extractLiText(li){
+    let s = '';
+    (function inner(n){
+      for(const c of n.childNodes){
+        if(c.nodeType === 3) s += c.textContent;
+        else if(c.nodeType === 1){
+          if(c.tagName === 'BR') s += '\n';
+          else inner(c);
+        }
+      }
+    })(li);
+    return s.trim();
+  }
+  function walk(node){
+    for(const child of node.childNodes){
+      if(child.nodeType === 3){
+        buf += child.textContent;
+      } else if(child.nodeType === 1){
+        const tag = child.tagName;
+        if(tag === 'BR') flush();
+        else if(tag === 'UL'){
+          flush();
+          for(const li of child.children){
+            if(li.tagName !== 'LI') continue;
+            const liText = extractLiText(li);
+            if(buf){ lines.push(buf); buf = ''; }
+            lines.push('- ' + liText);
+          }
+        }
+        else if(tag === 'OL'){
+          flush();
+          let idx = parseInt(child.getAttribute('start') || '1', 10);
+          for(const li of child.children){
+            if(li.tagName !== 'LI') continue;
+            const liText = extractLiText(li);
+            if(buf){ lines.push(buf); buf = ''; }
+            lines.push(idx + '. ' + liText);
+            idx++;
+          }
+        }
+        else walk(child);
+      }
+    }
+  }
+  walk(holder);
+  flush();
+  return lines.join('\n');
+}
+
+function buildHtmlFromRangePlain(range){
+  const frag = range.cloneContents();
+  const holder = document.createElement('div');
+  holder.appendChild(frag);
+  holder.querySelectorAll('.block-resize, .block-actions, .image-resize, .image-actions, .drawing-resize, .drawing-actions').forEach(el=>el.remove());
+  return sanitizeToPlainStructure(holder);
+}
+
+function sanitizeToPlainStructure(node){
+  let result = '';
+  node.childNodes.forEach(child=>{
+    if(child.nodeType === 3){
+      result += escapeHtml(child.textContent);
+    } else if(child.nodeType === 1){
+      const tag = child.tagName;
+      if(tag === 'BR') result += '<br>';
+      else if(tag === 'UL'){
+        result += '<ul>' + sanitizeToPlainStructure(child) + '</ul>';
+      }
+      else if(tag === 'OL'){
+        const start = child.getAttribute('start');
+        result += (start ? `<ol start="${escapeHtml(start)}">` : '<ol>') + sanitizeToPlainStructure(child) + '</ol>';
+      }
+      else if(tag === 'LI'){
+        result += '<li>' + sanitizeToPlainStructure(child) + '</li>';
+      }
+      else if(tag === 'P' || tag === 'DIV'){
+        const inner = sanitizeToPlainStructure(child);
+        if(inner){
+          if(result && !result.endsWith('<br>') && !result.endsWith('</li>') && !result.endsWith('</ul>') && !result.endsWith('</ol>')) result += '<br>';
+          result += inner;
+        }
+      }
+      else {
+        result += sanitizeToPlainStructure(child);
+      }
+    }
+  });
+  return result;
+}
+
+function buildHtmlFromRange(range){
+  const frag = range.cloneContents();
+  const holder = document.createElement('div');
+  holder.appendChild(frag);
+  holder.querySelectorAll('.block-resize, .block-actions, .image-resize, .image-actions, .drawing-resize, .drawing-actions').forEach(el=>el.remove());
+  return holder.innerHTML;
+}
+
+document.addEventListener('copy', e=>{
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  const sEl = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+  const blockEl = sEl && sEl.closest ? sEl.closest('.block') : null;
+  if(!blockEl) return;
+
+  e.preventDefault();
+  const plain = buildFormattedTextFromSelection(range);
+  const html = pendingCopyAsPlain ? buildHtmlFromRangePlain(range) : buildHtmlFromRange(range);
+  if(e.clipboardData){
+    e.clipboardData.setData('text/plain', plain);
+    e.clipboardData.setData('text/html', html);
+  }
+  if(pendingCopyAsPlain) toast('已复制（纯文本）');
+});
+
 function handlePaste(e){
   e.preventDefault();
   const html = e.clipboardData.getData('text/html');
   const text = e.clipboardData.getData('text/plain');
   let content = '';
-  if(html) content = sanitizeClipboardHtml(html);
-  else if(text) content = escapeHtml(text).replace(/\n/g,'<br>');
+  if(pendingPasteAsPlain){
+    if(html){
+      try{
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        content = sanitizeToPlainStructure(doc.body);
+      }catch(err){ content = escapeHtml(text || '').replace(/\n/g,'<br>'); }
+    } else if(text){
+      content = escapeHtml(text).replace(/\n/g, '<br>');
+    }
+  } else if(html){
+    content = sanitizeClipboardHtml(html);
+  } else if(text){
+    content = escapeHtml(text).replace(/\n/g, '<br>');
+  }
   if(content) document.execCommand('insertHTML', false, content);
 }
+
 function sanitizeClipboardHtml(html){
   try{
     const doc = new DOMParser().parseFromString(html,'text/html');
@@ -3104,6 +3246,7 @@ function walkSanitize(node){
   });
   return result;
 }
+
 function importFile(file){
   if(!file) return;
   const name = file.name || '';
@@ -3236,12 +3379,10 @@ function applyEnglishOnlyFontByOffset(blockEl, startOffset, endOffset, stack){
   const nodes = [];
   let n;
   while(n = walker.nextNode()) nodes.push(n);
-
   const isEn = ch => {
     const c = ch.charCodeAt(0);
     return c >= 0x20 && c <= 0x7E;
   };
-
   let cum = 0;
   for(const tn of nodes){
     if(!tn.parentNode) continue;
@@ -3250,14 +3391,11 @@ function applyEnglishOnlyFontByOffset(blockEl, startOffset, endOffset, stack){
     const nodeStart = cum;
     const nodeEnd = cum + text.length;
     cum = nodeEnd;
-
     const segStart = Math.max(0, startOffset - nodeStart);
     const segEnd = Math.min(text.length, endOffset - nodeStart);
     if(segStart >= segEnd) continue;
-
     const frag = document.createDocumentFragment();
     if(segStart > 0) frag.appendChild(document.createTextNode(text.slice(0, segStart)));
-
     let i = segStart;
     while(i < segEnd){
       const isAscii = isEn(text[i]);
@@ -3274,7 +3412,6 @@ function applyEnglishOnlyFontByOffset(blockEl, startOffset, endOffset, stack){
       }
       i = j;
     }
-
     if(segEnd < text.length) frag.appendChild(document.createTextNode(text.slice(segEnd)));
     tn.parentNode.replaceChild(frag, tn);
   }
@@ -4895,6 +5032,10 @@ function bindEvents(){
     if(e.ctrlKey || e.metaKey) ctrlHeld = true;
     const key = e.key ? e.key.toLowerCase() : '';
     const mod = e.ctrlKey || e.metaKey;
+    if(mod && e.shiftKey){
+      if(key === 'c') pendingCopyAsPlain = true;
+      if(key === 'v') pendingPasteAsPlain = true;
+    }
     if(e.key === 'Escape'){
       if(drawState.active){ exitDrawMode(); return; }
       if(readingMode){ exitReadingMode(); return; }
@@ -4903,8 +5044,17 @@ function bindEvents(){
     if(mod && ((key === 'z' && e.shiftKey) || key === 'y')){ e.preventDefault(); redo(); return; }
     if(mod && key === 's'){ e.preventDefault(); saveNow(); return; }
   });
-  window.addEventListener('keyup', e=>{ if(!e.ctrlKey && !e.metaKey) ctrlHeld = false; });
-  window.addEventListener('blur', ()=>{ ctrlHeld = false; });
+  window.addEventListener('keyup', e=>{
+    const key = e.key ? e.key.toLowerCase() : '';
+    if(key === 'c') pendingCopyAsPlain = false;
+    if(key === 'v') pendingPasteAsPlain = false;
+    if(!e.ctrlKey && !e.metaKey) ctrlHeld = false;
+  });
+  window.addEventListener('blur', ()=>{
+    ctrlHeld = false;
+    pendingCopyAsPlain = false;
+    pendingPasteAsPlain = false;
+  });
   window.addEventListener('beforeunload', ()=>{
     if(drawState.active){ drawState.strokes = []; drawState.currentStroke = null; }
     localSave(); saveGlobal();
