@@ -3235,12 +3235,35 @@ function importHtmlIntoNewDocument(html, title){
 function buildFontButtons(container, fonts, key){
   container.innerHTML = '';
   const tab = currentTab();
-  const cur = (tab && tab.settings && tab.settings.fonts && tab.settings.fonts[key]) || '';
+  let cur = (tab && tab.settings && tab.settings.fonts && tab.settings.fonts[key]) || '';
+  // 如果当前有选区，优先反映选区第一处的字体
+  try{
+    const sel = window.getSelection();
+    if(sel && !sel.isCollapsed && sel.rangeCount>0){
+      const range = sel.getRangeAt(0);
+      let node = range.startContainer;
+      let el = node.nodeType===1 ? node : node.parentElement;
+      if(el && el.closest && el.closest('.block')){
+        const fam = window.getComputedStyle(el).fontFamily || '';
+        if(fam){
+          // 把浏览器的 font-family 字符串跟预设对比，找最匹配的
+          const first = fam.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
+          const matched = fonts.find(f=>{
+            if(!f.stack) return false;
+            const fFirst = f.stack.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
+            return fFirst === first;
+          });
+          cur = matched ? matched.stack : '';
+        }
+      }
+    }
+  }catch(e){}
   fonts.forEach(f=>{
     const b = document.createElement('button');
     b.className = 'font-btn' + (f.stack === cur ? ' active' : '');
     b.textContent = f.name;
     b.style.fontFamily = f.stack || 'inherit';
+    b.addEventListener('mousedown', e=>e.preventDefault());
     b.addEventListener('click', ()=>applyFontChoice(key, f.stack));
     container.appendChild(b);
   });
@@ -3248,6 +3271,7 @@ function buildFontButtons(container, fonts, key){
 function applyFontChoice(key, stack){
   const tab = currentTab(); if(!tab) return;
   if(!tab.settings.fonts) tab.settings.fonts = {chinese:'',english:'',other:'',emoji:''};
+  restoreSelection();
   const sel = window.getSelection();
   if(sel && !sel.isCollapsed && sel.rangeCount > 0){
     const range = sel.getRangeAt(0);
