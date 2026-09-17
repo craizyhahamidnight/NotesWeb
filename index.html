@@ -1307,7 +1307,15 @@ const appState = {
 const globalState = { sound:null, musicList:[], musicMode:'order', musicIndex:-1, paperTexture:null };
 const drawState = { active:false, strokes:[], currentStroke:null, svgRoot:null, strokeGroup:null, clipRect:null };
 const historyState = { undo:[], redo:[], maxSize:60, maxBytes:50*1024*1024, totalBytes:0, suppress:false };
-let historyTimer=null, accessToken=null, tokenExpire=0, driveFileId=null;
+const LS_TOKEN = 'xingkai_token_v3';
+let accessToken=null, tokenExpire=0, driveFileId=null;
+try{
+  const _t = JSON.parse(localStorage.getItem(LS_TOKEN) || 'null');
+  if(_t && _t.token && _t.expire > Date.now()){
+    accessToken = _t.token;
+    tokenExpire = _t.expire;
+  }
+}catch(e){}
 let saveTimer=null, toastTimer=null, savedRange=null;
 let readingMode=false, recentPanelOpen=false;
 let ctrlHeld=false, lastTabCharsCount=0, lastStatDateKey='', clockTimer=null;
@@ -3549,6 +3557,7 @@ function startGoogleAuth(clientId){
       if(resp.error){ toast('登录失败：'+resp.error); return; }
       accessToken = resp.access_token;
       tokenExpire = Date.now() + ((resp.expires_in||3600)-60)*1000;
+      try{ localStorage.setItem(LS_TOKEN, JSON.stringify({token:accessToken, expire:tokenExpire})); }catch(e){}
       updateAuthUI();
       await onLoggedIn();
     }
@@ -4720,6 +4729,7 @@ function bindEvents(){
   $('loginBtn').addEventListener('click', ()=>{
     if(accessToken && Date.now() < tokenExpire){
       accessToken = null; tokenExpire = 0; driveFileId = null;
+      try{ localStorage.removeItem(LS_TOKEN); }catch(e){}
       updateAuthUI(); toast('已退出 Google 账号'); return;
     }
     const cid = localStorage.getItem(LS_CLIENT);
