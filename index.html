@@ -759,6 +759,7 @@
       <input class="title-input" id="noteTitle" placeholder="无标题">
       <div class="sep"></div>
       <label class="ctl color-ctl" title="字色">字色<input type="color" id="fontColor"><button class="mini-reset" data-reset="fontColor">↺</button></label>
+      <label class="ctl color-ctl" title="选中文字单独改色">选字色<input type="color" id="selFontColor"></label>
       <label class="ctl color-ctl" title="线色">线色<input type="color" id="lineColor"><button class="mini-reset" data-reset="lineColor">↺</button></label>
       <label class="ctl color-ctl" title="底色">底色<input type="color" id="bgColor"><button class="mini-reset" data-reset="bgColor">↺</button></label>
       <label class="ctl" title="字号">字号<input type="range" id="fontSize" min="16" max="44" step="1"><button class="font-anchor-btn" id="fontAnchorBtn">＋</button></label>
@@ -5123,6 +5124,56 @@ function init(){
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
+})();
+  (function(){
+  'use strict';
+  var selColor = document.getElementById('selFontColor');
+  if(!selColor) return;
+  var savedRange = null;
+
+  selColor.addEventListener('mousedown', function(e){
+    try{
+      var sel = window.getSelection();
+      if(sel && sel.rangeCount > 0 && !sel.isCollapsed){
+        var range = sel.getRangeAt(0);
+        var el = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+        var blockEl = el && el.closest ? el.closest('.block') : null;
+        if(blockEl) savedRange = range.cloneRange();
+        else savedRange = null;
+      } else {
+        savedRange = null;
+      }
+    }catch(err){ savedRange = null; }
+  });
+
+  selColor.addEventListener('input', function(){
+    if(!savedRange){
+      var msg = document.querySelector('.toast');
+      if(!msg){ msg = document.createElement('div'); msg.className = 'toast'; document.body.appendChild(msg); }
+      msg.textContent = '请先在文本框里选中文字';
+      requestAnimationFrame(function(){ msg.classList.add('show'); });
+      setTimeout(function(){ msg.classList.remove('show'); }, 2000);
+      return;
+    }
+    var el = savedRange.startContainer.nodeType === 1 ? savedRange.startContainer : savedRange.startContainer.parentElement;
+    var blockEl = el && el.closest ? el.closest('.block') : null;
+    if(!blockEl) return;
+    try{
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }catch(err){}
+    try{ document.execCommand('styleWithCSS', false, true); }catch(err){}
+    try{ document.execCommand('foreColor', false, selColor.value); }catch(err){}
+    try{ document.execCommand('styleWithCSS', false, false); }catch(err){}
+    try{ blockEl.dispatchEvent(new Event('input', { bubbles: true })); }catch(err){}
+    var t = document.querySelector('.toast');
+    if(!t){ t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = '已改选中文字颜色';
+    requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); }, 1500);
+    savedRange = null;
+  });
 })();
 </script>
 </body>
