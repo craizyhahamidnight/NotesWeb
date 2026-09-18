@@ -300,6 +300,28 @@ body.reading-mode .reading-exit{display:inline-flex;}
 .mobile-only{display:none !important;}
 .mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1500;display:none;}
 .mobile-overlay.show{display:block;}
+.game-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:2000;}
+.game-modal.show{display:flex;}
+.game-card{width:min(94vw,720px);height:min(92vh,880px);background:#1a1d24;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.game-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--ui-bg);border-bottom:1px solid var(--ui-border);flex:0 0 auto;}
+.game-tabs{display:flex;gap:6px;}
+.game-tabs button{padding:6px 14px;border-radius:8px;border:1px solid var(--ui-border);background:var(--ui-bg);color:var(--ui-text);font-size:13px;cursor:pointer;font-family:inherit;}
+.game-tabs button.active{background:#3d7bfd;color:#fff;border-color:#3d7bfd;}
+.game-close{width:28px;height:28px;border:none;border-radius:6px;background:transparent;color:var(--ui-text-dim);font-size:20px;cursor:pointer;line-height:1;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;}
+.game-close:hover{background:var(--ui-hover);color:var(--ui-text);}
+.game-stage{position:relative;flex:1;overflow:hidden;background:#141821;display:flex;align-items:center;justify-content:center;touch-action:none;min-height:0;}
+.game-stage canvas{display:block;max-width:100%;max-height:100%;image-rendering:pixelated;}
+.game-hud{position:absolute;top:10px;left:12px;color:#fff;font-size:14px;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.6);z-index:3;}
+.game-hud strong{color:#ffd54f;font-weight:700;}
+.game-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;font-size:16px;z-index:5;padding:20px;text-align:center;}
+.game-overlay.show{display:flex;}
+.game-overlay-btn{padding:10px 28px;border-radius:10px;border:none;background:#3d7bfd;color:#fff;font-size:15px;cursor:pointer;font-family:inherit;font-weight:600;}
+.game-overlay-btn:hover{background:#2f6ae8;}
+.joystick{position:absolute;left:18px;bottom:18px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);touch-action:none;user-select:none;display:none;z-index:4;}
+.joystick-knob{position:absolute;left:50%;top:50%;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.5);transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.game-buttons{position:absolute;right:18px;bottom:18px;display:none;flex-direction:column;gap:10px;z-index:4;}
+.game-action-btn{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:#fff;font-size:22px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;line-height:1;padding:0;}
+.game-action-btn:active{background:rgba(255,255,255,.35);}
 @media (max-width: 900px){
 .mobile-only{display:inline-flex !important;}
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;flex:none;z-index:2000;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 20px rgba(0,0,0,.25);}
@@ -333,6 +355,11 @@ body.reading-mode .reading-exit{display:inline-flex;}
 .modal-card.wide{width:min(94vw,720px);}
 .music-panel{right:8px;left:8px;width:auto;bottom:70px;}
 .toast{bottom:80px;font-size:12px;}
+.game-card{width:96vw;height:94vh;}
+.joystick{width:100px;height:100px;left:12px;bottom:12px;}
+.joystick-knob{width:40px;height:40px;}
+.game-action-btn{width:54px;height:54px;font-size:18px;}
+.game-buttons{right:12px;bottom:12px;gap:8px;}
 }
 @media (max-width: 480px){
 .toolbar button{padding:3px 5px;font-size:10.5px;gap:1px;}
@@ -343,7 +370,6 @@ body.reading-mode .reading-exit{display:inline-flex;}
 .statusbar{font-size:10.5px;}
 }
 </style>
-</head>
 <body>
 
 <div class="app">
@@ -411,6 +437,7 @@ body.reading-mode .reading-exit{display:inline-flex;}
       <button id="keywordBtn">🏷</button>
       <button id="searchBtn">🔍</button>
       <button id="diceBtn">🎲</button>
+      <button id="gameBtn" title="小游戏">🎮</button>
       <button id="importFileBtn">📥 导入</button>
       <button id="exportBtn">📤</button>
       <button id="readingBtn">📖</button>
@@ -768,6 +795,28 @@ body.reading-mode .reading-exit{display:inline-flex;}
     <div class="modal-actions">
       <button id="exportCancel">取消</button>
       <button id="exportGo" class="primary">开始导出</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-modal" id="gameModal">
+  <div class="game-card">
+    <div class="game-header">
+      <div class="game-tabs">
+        <button data-game="snake" class="active">🐍 贪吃蛇</button>
+        <button data-game="tetris">🧱 俄罗斯方块</button>
+      </div>
+      <button class="game-close" id="gameClose">×</button>
+    </div>
+    <div class="game-stage">
+      <canvas id="gameCanvas"></canvas>
+      <div class="game-hud">分数：<strong id="gameScore">0</strong></div>
+      <div class="game-overlay" id="gameOverlay">
+        <div class="game-overlay-text" id="gameOverlayText">按开始或空格键开始</div>
+        <button class="game-overlay-btn" id="gameStartBtn">开始</button>
+      </div>
+      <div class="joystick" id="gameJoystick"><div class="joystick-knob"></div></div>
+      <div class="game-buttons" id="gameButtons"></div>
     </div>
   </div>
 </div>
@@ -3331,6 +3380,374 @@ function saveWeeklyGoal(){
   }
   updateStatsDisplay(); scheduleSave(); closeModal('weeklyGoalModal'); toast('周目标已保存');
 }
+
+/* ========== 小游戏 ========== */
+function setupGames(){
+  const modal = $('gameModal');
+  const canvas = $('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const overlay = $('gameOverlay');
+  const overlayText = $('gameOverlayText');
+  const startBtn = $('gameStartBtn');
+  const scoreEl = $('gameScore');
+  const tabsEl = modal.querySelector('.game-tabs');
+  const joystickEl = $('gameJoystick');
+  const buttonsEl = $('gameButtons');
+  const knobEl = joystickEl.querySelector('.joystick-knob');
+
+  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  if(isTouch){ joystickEl.style.display = 'block'; buttonsEl.style.display = 'flex'; }
+
+  let current = 'snake';
+  let running = false;
+  let rafId = null;
+  let lastT = 0;
+  let joyDir = {x:0, y:0};
+
+  (function initJoystick(){
+    let jid = null, cx = 0, cy = 0, radius = 0;
+    function center(){
+      const r = joystickEl.getBoundingClientRect();
+      cx = r.left + r.width/2; cy = r.top + r.height/2; radius = r.width/2 - 12;
+    }
+    function move(kx, ky){
+      const dx = kx - cx, dy = ky - cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      const cl = Math.min(dist, radius);
+      const nx = dx / dist * cl, ny = dy / dist * cl;
+      knobEl.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+      if(dist < radius * 0.3){ joyDir.x = 0; joyDir.y = 0; }
+      else {
+        const ux = dx / dist, uy = dy / dist;
+        joyDir.x = Math.abs(ux) > 0.4 ? Math.sign(ux) : 0;
+        joyDir.y = Math.abs(uy) > 0.4 ? Math.sign(uy) : 0;
+      }
+    }
+    function end(){
+      jid = null;
+      knobEl.style.transform = 'translate(-50%,-50%)';
+      joyDir.x = 0; joyDir.y = 0;
+    }
+    joystickEl.addEventListener('touchstart', e=>{
+      const t = e.changedTouches[0]; jid = t.identifier; center(); move(t.clientX, t.clientY); e.preventDefault();
+    }, {passive:false});
+    joystickEl.addEventListener('touchmove', e=>{
+      for(const t of e.changedTouches){ if(t.identifier === jid){ move(t.clientX, t.clientY); e.preventDefault(); break; } }
+    }, {passive:false});
+    joystickEl.addEventListener('touchend', e=>{
+      for(const t of e.changedTouches){ if(t.identifier === jid){ end(); e.preventDefault(); break; } }
+    }, {passive:false});
+    joystickEl.addEventListener('touchcancel', end);
+  })();
+
+  const SC = 20, SR = 20, S_CELL = 20;
+  const SW = SC * S_CELL, SH = SR * S_CELL;
+  const snake = { body:[], dir:{x:1,y:0}, nextDir:{x:1,y:0}, food:null, stepMs:140, acc:0, score:0, dead:false };
+  function snakeReset(){
+    snake.body = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+    snake.dir = {x:1,y:0}; snake.nextDir = {x:1,y:0};
+    snake.stepMs = 140; snake.acc = 0; snake.score = 0; snake.dead = false;
+    snakePlaceFood();
+  }
+  function snakePlaceFood(){
+    while(true){
+      const x = Math.floor(Math.random()*SC), y = Math.floor(Math.random()*SR);
+      if(!snake.body.some(b=>b.x===x && b.y===y)){ snake.food = {x,y}; return; }
+    }
+  }
+  function snakeSetDir(dx, dy){
+    if(!running || snake.dead) return;
+    if(snake.dir.x === -dx && snake.dir.y === -dy) return;
+    if(snake.nextDir.x === dx && snake.nextDir.y === dy) return;
+    snake.nextDir = {x:dx, y:dy};
+  }
+  function snakeTick(){
+    snake.dir = snake.nextDir;
+    const head = {x: snake.body[0].x + snake.dir.x, y: snake.body[0].y + snake.dir.y};
+    if(head.x < 0 || head.x >= SC || head.y < 0 || head.y >= SR){ snake.dead = true; return endGame(); }
+    if(snake.body.some(b=>b.x===head.x && b.y===head.y)){ snake.dead = true; return endGame(); }
+    snake.body.unshift(head);
+    if(snake.food && head.x === snake.food.x && head.y === snake.food.y){
+      snake.score += 10;
+      scoreEl.textContent = snake.score;
+      if(snake.stepMs > 60) snake.stepMs -= 4;
+      snakePlaceFood();
+    } else snake.body.pop();
+  }
+  function snakeDraw(){
+    canvas.width = SW; canvas.height = SH;
+    ctx.fillStyle = '#141821'; ctx.fillRect(0,0,SW,SH);
+    ctx.strokeStyle = 'rgba(255,255,255,.04)';
+    for(let i=0;i<=SC;i++){ ctx.beginPath(); ctx.moveTo(i*S_CELL,0); ctx.lineTo(i*S_CELL,SH); ctx.stroke(); }
+    for(let j=0;j<=SR;j++){ ctx.beginPath(); ctx.moveTo(0,j*S_CELL); ctx.lineTo(SW,j*S_CELL); ctx.stroke(); }
+    if(snake.food){
+      ctx.fillStyle = '#ff5252';
+      ctx.beginPath();
+      ctx.arc(snake.food.x*S_CELL + S_CELL/2, snake.food.y*S_CELL + S_CELL/2, S_CELL/2 - 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+    snake.body.forEach((b,i)=>{
+      ctx.fillStyle = i === 0 ? '#4dd0e1' : 'rgba(77,208,225,.7)';
+      ctx.fillRect(b.x*S_CELL + 1, b.y*S_CELL + 1, S_CELL - 2, S_CELL - 2);
+    });
+  }
+
+  const TC = 10, TR = 20, T_CELL = 22;
+  const TW = TC * T_CELL, TH = TR * T_CELL;
+  const SHAPES = {
+    I: {color:'#4dd0e1', m:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]]},
+    O: {color:'#ffd54f', m:[[1,1],[1,1]]},
+    T: {color:'#ba68c8', m:[[0,1,0],[1,1,1],[0,0,0]]},
+    S: {color:'#81c784', m:[[0,1,1],[1,1,0],[0,0,0]]},
+    Z: {color:'#e57373', m:[[1,1,0],[0,1,1],[0,0,0]]},
+    J: {color:'#64b5f6', m:[[1,0,0],[1,1,1],[0,0,0]]},
+    L: {color:'#ffb74d', m:[[0,0,1],[1,1,1],[0,0,0]]}
+  };
+  const KEYS = Object.keys(SHAPES);
+  const tet = { grid:[], piece:null, stepMs:600, acc:0, score:0, dead:false, _xcd:0, _ycd:0, _rcd:0 };
+  function tetReset(){
+    tet.grid = Array.from({length: TR}, ()=>Array(TC).fill(null));
+    tet.stepMs = 600; tet.acc = 0; tet.score = 0; tet.dead = false;
+    tet._xcd = 0; tet._ycd = 0; tet._rcd = 0;
+    tetSpawn();
+  }
+  function tetSpawn(){
+    const k = KEYS[Math.floor(Math.random()*KEYS.length)];
+    const shape = SHAPES[k];
+    const m = shape.m.map(r=>r.slice());
+    const p = { m, color: shape.color, x: Math.floor((TC - m[0].length)/2), y: 0 };
+    if(tetCollide(p, 0, 0)){ tet.dead = true; return endGame(); }
+    tet.piece = p;
+  }
+  function tetCollide(p, dx, dy, mat){
+    const m = mat || p.m;
+    for(let y=0;y<m.length;y++){
+      for(let x=0;x<m[y].length;x++){
+        if(!m[y][x]) continue;
+        const nx = p.x + x + dx, ny = p.y + y + dy;
+        if(nx < 0 || nx >= TC || ny >= TR) return true;
+        if(ny >= 0 && tet.grid[ny][nx]) return true;
+      }
+    }
+    return false;
+  }
+  function tetRotate(){
+    if(!running || tet.dead || !tet.piece) return;
+    const m = tet.piece.m, N = m.length;
+    const r = Array.from({length:N}, ()=>Array(N).fill(0));
+    for(let y=0;y<N;y++) for(let x=0;x<N;x++) r[x][N-1-y] = m[y][x];
+    if(!tetCollide(tet.piece, 0, 0, r)) tet.piece.m = r;
+  }
+  function tetMove(dx){
+    if(!running || tet.dead || !tet.piece) return;
+    if(!tetCollide(tet.piece, dx, 0)) tet.piece.x += dx;
+  }
+  function tetSoftDrop(){
+    if(!running || tet.dead || !tet.piece) return;
+    if(!tetCollide(tet.piece, 0, 1)) tet.piece.y += 1;
+    else tetLock();
+  }
+  function tetHardDrop(){
+    if(!running || tet.dead || !tet.piece) return;
+    while(!tetCollide(tet.piece, 0, 1)) tet.piece.y += 1;
+    tetLock();
+  }
+  function tetLock(){
+    const p = tet.piece;
+    for(let y=0;y<p.m.length;y++){
+      for(let x=0;x<p.m[y].length;x++){
+        if(!p.m[y][x]) continue;
+        const gx = p.x + x, gy = p.y + y;
+        if(gy >= 0 && gy < TR && gx >= 0 && gx < TC) tet.grid[gy][gx] = p.color;
+      }
+    }
+    let cleared = 0;
+    for(let y=TR-1;y>=0;y--){
+      if(tet.grid[y].every(c=>c)){
+        tet.grid.splice(y,1);
+        tet.grid.unshift(Array(TC).fill(null));
+        cleared++; y++;
+      }
+    }
+    if(cleared){
+      tet.score += [0,100,300,500,800][cleared] || 800;
+      scoreEl.textContent = tet.score;
+      if(tet.stepMs > 150) tet.stepMs -= Math.min(30, cleared*10);
+    }
+    tetSpawn();
+  }
+  function tetDraw(){
+    canvas.width = TW; canvas.height = TH;
+    ctx.fillStyle = '#141821'; ctx.fillRect(0,0,TW,TH);
+    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    for(let i=0;i<=TC;i++){ ctx.beginPath(); ctx.moveTo(i*T_CELL,0); ctx.lineTo(i*T_CELL,TH); ctx.stroke(); }
+    for(let j=0;j<=TR;j++){ ctx.beginPath(); ctx.moveTo(0,j*T_CELL); ctx.lineTo(TW,j*T_CELL); ctx.stroke(); }
+    for(let y=0;y<TR;y++) for(let x=0;x<TC;x++) if(tet.grid[y][x]) drawCell(x,y,tet.grid[y][x]);
+    if(tet.piece){
+      const p = tet.piece;
+      for(let y=0;y<p.m.length;y++) for(let x=0;x<p.m[y].length;x++) if(p.m[y][x]) drawCell(p.x+x, p.y+y, p.color);
+    }
+  }
+  function drawCell(gx, gy, color){
+    const x = gx*T_CELL, y = gy*T_CELL;
+    ctx.fillStyle = color;
+    ctx.fillRect(x+1, y+1, T_CELL-2, T_CELL-2);
+    ctx.strokeStyle = 'rgba(255,255,255,.25)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x+1.5, y+1.5, T_CELL-3, T_CELL-3);
+  }
+
+  function loop(t){
+    if(!running){ rafId = null; return; }
+    if(!lastT) lastT = t;
+    let dt = t - lastT; lastT = t;
+    if(dt > 100) dt = 100;
+    if(current === 'snake'){
+      snake.acc += dt;
+      if(joyDir.x || joyDir.y){
+        if(Math.abs(joyDir.x) >= Math.abs(joyDir.y)) snakeSetDir(joyDir.x, 0);
+        else snakeSetDir(0, joyDir.y);
+      }
+      while(snake.acc >= snake.stepMs && !snake.dead){
+        snake.acc -= snake.stepMs;
+        snakeTick();
+        if(snake.dead) return;
+      }
+      snakeDraw();
+    } else {
+      tet.acc += dt;
+      if(joyDir.x){
+        tet._xcd -= dt;
+        if(tet._xcd <= 0){ tetMove(Math.sign(joyDir.x)); tet._xcd = 140; }
+      } else tet._xcd = 0;
+      if(joyDir.y > 0){
+        tet._ycd -= dt;
+        if(tet._ycd <= 0){ tetSoftDrop(); tet._ycd = 60; }
+      } else tet._ycd = 0;
+      if(joyDir.y < 0){
+        tet._rcd -= dt;
+        if(tet._rcd <= 0){ tetRotate(); tet._rcd = 350; }
+      } else tet._rcd = 0;
+      while(tet.acc >= tet.stepMs && !tet.dead){
+        tet.acc -= tet.stepMs;
+        if(!tetCollide(tet.piece, 0, 1)) tet.piece.y += 1;
+        else tetLock();
+        if(tet.dead) return;
+      }
+      tetDraw();
+    }
+    if(running) rafId = requestAnimationFrame(loop);
+  }
+
+  function start(){
+    if(current === 'snake') snakeReset(); else tetReset();
+    scoreEl.textContent = '0';
+    overlay.classList.remove('show');
+    running = true; lastT = 0;
+    if(!rafId) rafId = requestAnimationFrame(loop);
+  }
+  function endGame(){
+    running = false;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    const s = current === 'snake' ? snake.score : tet.score;
+    overlayText.textContent = '游戏结束，得分 ' + s;
+    startBtn.textContent = '再来一局';
+    overlay.classList.add('show');
+    if(current === 'snake') snakeDraw(); else tetDraw();
+  }
+  function pause(){
+    if(!running) return;
+    running = false;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    overlayText.textContent = '已暂停';
+    startBtn.textContent = '继续';
+    overlay.classList.add('show');
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(!modal.classList.contains('show')) return;
+    if((e.key === ' ' || e.key === 'Enter') && !running){
+      e.preventDefault(); e.stopPropagation(); start(); return;
+    }
+    if(!running){
+      if(e.key === 'p' || e.key === 'P'){ e.preventDefault(); e.stopPropagation(); start(); }
+      return;
+    }
+    if(e.key === 'p' || e.key === 'P'){ e.preventDefault(); e.stopPropagation(); pause(); return; }
+    if(current === 'snake'){
+      let handled = true;
+      if(e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') snakeSetDir(0,-1);
+      else if(e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') snakeSetDir(0,1);
+      else if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') snakeSetDir(-1,0);
+      else if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') snakeSetDir(1,0);
+      else if(e.key === ' ') pause();
+      else handled = false;
+      if(handled){ e.preventDefault(); e.stopPropagation(); }
+    } else {
+      let handled = true;
+      if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') tetMove(-1);
+      else if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') tetMove(1);
+      else if(e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') tetSoftDrop();
+      else if(e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') tetRotate();
+      else if(e.key === ' ') tetHardDrop();
+      else handled = false;
+      if(handled){ e.preventDefault(); e.stopPropagation(); }
+    }
+  }, true);
+
+  startBtn.addEventListener('click', start);
+  $('gameClose').addEventListener('click', closeGame);
+  modal.addEventListener('click', e=>{ if(e.target === modal) closeGame(); });
+  tabsEl.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>switchGame(b.dataset.game));
+  });
+
+  function renderButtons(){
+    buttonsEl.innerHTML = '';
+    if(current !== 'tetris') return;
+    const r = document.createElement('button');
+    r.className = 'game-action-btn'; r.textContent = '↻'; r.title = '旋转';
+    r.addEventListener('click', tetRotate);
+    const d = document.createElement('button');
+    d.className = 'game-action-btn'; d.textContent = '⤓'; d.title = '硬降';
+    d.addEventListener('click', tetHardDrop);
+    const p = document.createElement('button');
+    p.className = 'game-action-btn'; p.textContent = '⏸'; p.title = '暂停/继续';
+    p.addEventListener('click', ()=>{ running ? pause() : start(); });
+    buttonsEl.append(r, d, p);
+  }
+
+  function resetCurrent(){
+    running = false;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    scoreEl.textContent = '0';
+    if(current === 'snake'){ snakeReset(); snakeDraw(); }
+    else { tetReset(); tetDraw(); }
+    overlayText.textContent = '按开始或空格键开始';
+    startBtn.textContent = '开始';
+    overlay.classList.add('show');
+    renderButtons();
+  }
+
+  function switchGame(g){
+    if(g === current && modal.classList.contains('show')) return;
+    current = g;
+    tabsEl.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.game === g));
+    resetCurrent();
+  }
+
+  function openGame(){
+    modal.classList.add('show');
+    resetCurrent();
+  }
+  function closeGame(){
+    running = false;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    modal.classList.remove('show');
+  }
+
+  $('gameBtn').addEventListener('click', openGame);
+}
 function renderFolderOverview(){
   const grid = $('folderOverviewGrid'); grid.innerHTML = '';
   appState.folders.forEach(f=>{
@@ -4774,6 +5191,7 @@ function setAppHeight(){
 function init(){
   try{ document.execCommand('styleWithCSS', false, false); }catch(e){}
   bindEvents();
+  setupGames();
   loadGlobal();
   const ok = localLoad();
   if(!ok || !appState.folders.length){
