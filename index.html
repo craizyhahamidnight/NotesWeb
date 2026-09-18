@@ -12,8 +12,10 @@
 <style>
 :root{--app-bg:#eef1f5;--ui-bg:#fff;--ui-text:#2b3038;--ui-text-dim:#6b7889;--ui-border:#e3e8ee;--ui-hover:#f4f7fb;--ui-active:#eaf2ff;--bg:#fff;--line:#dbe6f5;--gap:36px;--font:'LXGW WenKai','KaiTi','楷体','Kaiti SC',cursive,sans-serif;}
 *{box-sizing:border-box;}
-html,body{height:100%;margin:0;overflow:hidden;}
+html,body{height:100%;margin:0;overflow:hidden;touch-action:manipulation;}
 body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--app-bg);color:var(--ui-text);overflow:hidden;transition:background-color .25s,color .25s;}
+body.draw-mode{overscroll-behavior:none;}
+body.draw-mode .canvas-wrap{overscroll-behavior:none;}
 .app{display:flex;height:100vh;height:var(--app-h,100dvh);}
 .sidebar{width:240px;flex:0 0 240px;background:var(--ui-bg);border-right:1px solid var(--ui-border);display:flex;flex-direction:column;transition:width .2s,flex-basis .2s,background-color .25s,border-color .25s;overflow:hidden;position:relative;min-height:0;}
 .sidebar.collapsed{width:36px;flex-basis:36px;}
@@ -2122,7 +2124,7 @@ function enterDrawMode(){
   drawState.active = true; drawState.strokes = []; drawState.currentStroke = null;
   const svg = document.createElementNS(NS,'svg');
   svg.setAttribute('xmlns',NS);
-  svg.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:9999;pointer-events:auto;cursor:crosshair;touch-action:none;overflow:visible;';
+  svg.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:9999;pointer-events:auto;cursor:crosshair;overflow:visible;touch-action:auto;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;';
   const defs = document.createElementNS(NS,'defs');
   const cp = document.createElementNS(NS,'clipPath');
   cp.setAttribute('id','drawPaperClip_'+Date.now());
@@ -2133,6 +2135,15 @@ function enterDrawMode(){
   document.body.appendChild(svg);
   drawState.svgRoot = svg; drawState.strokeGroup = g; drawState.clipRect = cr;
   updateDrawClipRect();
+
+  const blockTouchForStylusOnly = e => {
+    const t = e.touches && e.touches[0];
+    if(t && t.touchType === 'stylus'){ e.preventDefault(); }
+  };
+  svg.addEventListener('touchstart', blockTouchForStylusOnly, { passive: false });
+  svg.addEventListener('touchmove', blockTouchForStylusOnly, { passive: false });
+  svg.addEventListener('touchend', blockTouchForStylusOnly, { passive: false });
+
   svg.addEventListener('pointerdown', onDrawStart);
   svg.addEventListener('pointermove', onDrawMove);
   svg.addEventListener('pointerup', onDrawEnd);
@@ -2170,6 +2181,7 @@ function updateDrawClipRect(){
 function onDrawScroll(){ updateDrawClipRect(); }
 function onDrawStart(e){
   if(!drawState.active || !drawState.svgRoot) return;
+  if(e.pointerType === 'touch') return;
   e.preventDefault(); e.stopPropagation();
   updateDrawClipRect();
   const x=e.clientX, y=e.clientY;
