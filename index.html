@@ -2647,8 +2647,6 @@ function addBlock(){
   updatePageHeight(); updateStatusBar(); el.focus(); scheduleSave();
 }
 
-/* ===== 复制/粘贴处理 ===== */
-
 function buildFormattedTextFromSelection(range){
   const frag = range.cloneContents();
   const holder = document.createElement('div');
@@ -3330,15 +3328,49 @@ function renderFolderOverview(){
     tile.innerHTML = `<div class="folder-tile-icon">📁</div>
       <div class="folder-tile-name">${escapeHtml(f.name)}</div>
       <div class="folder-tile-count">${f.documents.length} 个文件</div>`;
-    tile.addEventListener('click', ()=>{
+    let longPressTimer = null;
+    let longPressFired = false;
+    let startX = 0, startY = 0;
+
+    tile.addEventListener('click', e=>{
+      if(longPressFired){
+        e.preventDefault(); e.stopPropagation();
+        longPressFired = false;
+        return;
+      }
       switchFolder(f.id);
       closeModal('folderOverviewModal');
     });
+
     tile.addEventListener('contextmenu', e=>{
       e.preventDefault(); e.stopPropagation();
       contextFolderId = f.id;
       showFolderContextMenu(e.clientX, e.clientY);
     });
+
+    tile.addEventListener('pointerdown', e=>{
+      if(e.pointerType === 'mouse') return;
+      startX = e.clientX; startY = e.clientY;
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(()=>{
+        longPressFired = true;
+        contextFolderId = f.id;
+        showFolderContextMenu(startX, startY);
+        try{ if(navigator.vibrate) navigator.vibrate(20); }catch(err){}
+      }, 500);
+    });
+
+    tile.addEventListener('pointermove', e=>{
+      if(longPressTimer && (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10)){
+        clearTimeout(longPressTimer); longPressTimer = null;
+      }
+    });
+
+    tile.addEventListener('pointerup', ()=>{ clearTimeout(longPressTimer); longPressTimer = null; });
+    tile.addEventListener('pointercancel', ()=>{ clearTimeout(longPressTimer); longPressTimer = null; });
+    tile.addEventListener('pointerleave', ()=>{ clearTimeout(longPressTimer); longPressTimer = null; });
+
     grid.appendChild(tile);
   });
 }
@@ -4723,6 +4755,10 @@ function bindEvents(){
     localSave(); saveGlobal();
   });
 }
+function setAppHeight(){
+  const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  document.documentElement.style.setProperty('--app-h', h + 'px');
+}
 function init(){
   try{ document.execCommand('styleWithCSS', false, false); }catch(e){}
   bindEvents();
@@ -4784,6 +4820,13 @@ function init(){
     else setTimeout(tryInitGoogle, 500);
   };
   tryInitGoogle();
+}
+setAppHeight();
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', setAppHeight);
+  window.visualViewport.addEventListener('scroll', setAppHeight);
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
