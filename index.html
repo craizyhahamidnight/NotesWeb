@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>行楷笔记</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
@@ -267,7 +267,7 @@
     padding:1px 5px;border-radius:4px;background:rgba(61,123,253,.12);
   }
   .clock-time{font-weight:600;font-variant-numeric:tabular-nums;}
-  .canvas-wrap{flex:1;overflow:auto;padding:28px 20px 70px;}
+  .canvas-wrap{flex:1;overflow:auto;padding:28px 20px 70px;-webkit-overflow-scrolling:touch;}
   .page{
     position:relative;width:880px;margin:0 auto;min-height:1200px;
     background-color:var(--bg);
@@ -396,7 +396,7 @@
     position:absolute;font-family:var(--font);line-height:var(--gap);
     white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
     outline:none;min-height:var(--gap);pointer-events:auto;cursor:text;
-    border-radius:3px;transition:color .2s;
+    border-radius:3px;transition:color .2s;touch-action:manipulation;
   }
   .block:focus{box-shadow:0 0 0 1px rgba(80,140,255,.35);}
   .block.dragging{cursor:grabbing !important;box-shadow:0 4px 14px rgba(0,0,0,.18);}
@@ -404,9 +404,9 @@
     position:absolute;right:-7px;bottom:-7px;width:12px;height:12px;
     border-radius:4px;background:#3d7bfd;border:2px solid #fff;
     opacity:0;transition:opacity .15s;cursor:nwse-resize;
-    box-shadow:0 1px 4px rgba(0,0,0,.2);
+    box-shadow:0 1px 4px rgba(0,0,0,.2);touch-action:none;
   }
-  .block:hover .block-resize{opacity:.75;}
+  .block:hover .block-resize,.block:focus .block-resize{opacity:.75;}
   .block-actions{
     position:absolute;right:-4px;top:-24px;display:flex;align-items:center;
     gap:2px;padding:2px 3px;border-radius:6px;background:var(--ui-bg);
@@ -720,6 +720,96 @@
   .export-option:hover{background:var(--ui-hover);}
   .export-option input{margin-top:3px;}
   .export-option-text .desc{font-size:11.5px;color:var(--ui-text-dim);margin-top:3px;line-height:1.5;}
+
+  /* ===== 移动端 / 平板适配 ===== */
+  .mobile-only{display:none !important;}
+  .mobile-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.4);
+    z-index:1500;display:none;
+  }
+  .mobile-overlay.show{display:block;}
+  @media (max-width: 900px){
+    .mobile-only{display:inline-flex !important;}
+
+    /* 侧栏改成浮层抽屉 */
+    .sidebar{
+      position:fixed;left:0;top:0;bottom:0;
+      width:260px;flex:none;
+      z-index:2000;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      box-shadow:4px 0 20px rgba(0,0,0,.25);
+    }
+    .sidebar.mobile-open{transform:translateX(0);}
+    /* 手机上强制展开状态 */
+    .sidebar.collapsed{width:260px;flex-basis:260px;}
+    .sidebar.collapsed > *:not(.side-head){display:initial !important;}
+    .sidebar.collapsed .side-head{
+      padding:10px 10px 8px;
+      justify-content:flex-start;
+    }
+    .sidebar.collapsed .side-head > *:not(.sb-toggle){display:initial !important;}
+    .sidebar.collapsed .sb-toggle{display:flex !important;}
+
+    /* Tab 侧栏也改成浮层 */
+    .tabs-sidebar{
+      position:fixed;left:0;top:0;bottom:0;
+      width:220px;flex:none;
+      z-index:2000;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      box-shadow:4px 0 20px rgba(0,0,0,.25);
+    }
+    .tabs-sidebar.mobile-open{transform:translateX(0);}
+    .tabs-sidebar.collapsed{width:220px;flex-basis:220px;}
+    .tabs-sidebar.collapsed .tabs-header span,
+    .tabs-sidebar.collapsed .tabs-list,
+    .tabs-sidebar.collapsed .new-tab-btn{display:block;}
+    .tabs-sidebar.collapsed .tabs-header{justify-content:space-between;padding:10px 8px 8px 10px;}
+
+    /* 主区铺满 */
+    .canvas-wrap{padding:14px 8px 60px;}
+    .page{width:100% !important;max-width:100%;box-sizing:border-box;}
+
+    /* 工具栏收紧 */
+    .toolbar{padding:5px 6px;gap:4px;}
+    .toolbar button{padding:4px 6px;font-size:11px;}
+    .toolbar .title-input{width:100px;font-size:14px;}
+    .hist-btn{width:26px;height:22px;font-size:12px;}
+    .sep{height:18px;}
+    .fmt-btn{width:24px;height:22px;font-size:11px;}
+    .mini-reset{width:18px;height:20px;}
+    .ctl{font-size:11px;gap:2px;}
+    .ctl input[type=range]{width:50px;}
+    .ctl input[type=color]{width:22px;height:20px;}
+
+    /* 状态栏 */
+    .statusbar{font-size:11px;gap:8px;padding:0 8px;}
+
+    /* 时钟缩小 */
+    .clock-display{right:8px;bottom:40px;padding:4px 8px;font-size:11px;gap:4px;}
+    .clock-region{font-size:10px;padding:1px 4px;}
+
+    /* 弹窗 */
+    .modal-card{padding:16px 14px;max-height:90vh;}
+    .modal-card.wide{width:min(94vw,720px);}
+
+    /* 音乐面板 */
+    .music-panel{right:8px;left:8px;width:auto;bottom:70px;}
+
+    /* Toast */
+    .toast{bottom:80px;font-size:12px;}
+  }
+
+  /* 小屏手机进一步收紧 */
+  @media (max-width: 480px){
+    .toolbar button{padding:3px 5px;font-size:10.5px;gap:1px;}
+    .toolbar .title-input{width:80px;font-size:13px;}
+    .canvas-wrap{padding:10px 4px 50px;}
+    .sidebar{width:min(80vw,260px);}
+    .tabs-sidebar{width:min(70vw,220px);}
+    .statusbar{font-size:10.5px;}
+  }
 </style>
 </head>
 <body>
@@ -752,6 +842,8 @@
 
   <div class="main">
     <header class="toolbar">
+      <button id="mobileMenuBtn" class="mobile-only" title="文件侧栏">☰</button>
+      <button id="mobileTabsBtn" class="mobile-only" title="标签页">📑</button>
       <button id="undoBtn" class="hist-btn" title="撤销">↶</button>
       <button id="redoBtn" class="hist-btn" title="重做">↷</button>
       <button id="saveBtn" class="hist-btn" title="保存">💾</button>
@@ -759,7 +851,6 @@
       <input class="title-input" id="noteTitle" placeholder="无标题">
       <div class="sep"></div>
       <label class="ctl color-ctl" title="字色">字色<input type="color" id="fontColor"><button class="mini-reset" data-reset="fontColor">↺</button></label>
-      <label class="ctl color-ctl" title="选中文字单独改色">选字色<input type="color" id="selFontColor"></label>
       <label class="ctl color-ctl" title="线色">线色<input type="color" id="lineColor"><button class="mini-reset" data-reset="lineColor">↺</button></label>
       <label class="ctl color-ctl" title="底色">底色<input type="color" id="bgColor"><button class="mini-reset" data-reset="bgColor">↺</button></label>
       <label class="ctl" title="字号">字号<input type="range" id="fontSize" min="16" max="44" step="1"><button class="font-anchor-btn" id="fontAnchorBtn">＋</button></label>
@@ -817,6 +908,8 @@
     </div>
   </div>
 </div>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
 
 <button class="reading-exit" id="readingExit">📖 退出阅读模式</button>
 <div class="clock-display" id="clockDisplay">
@@ -1228,6 +1321,7 @@ const undoBtn=$('undoBtn'),redoBtn=$('redoBtn'),saveBtn=$('saveBtn');
 const recentPanelEl=$('recentPanel'),recentListEl=$('recentList'),folderNameLabel=$('folderNameLabel');
 const tabsSidebarEl=$('tabsSidebar'),tabsListEl=$('tabsList'),tabsCollapseBtn=$('tabsCollapseBtn');
 const sidebarEl=$('sidebar'),sbToggleBtn=$('sbToggle');
+const mobileOverlayEl=$('mobileOverlay');
 
 const appState = {
   folders:[],
@@ -1265,6 +1359,8 @@ try{
 
 const searchState = { scope:'current', query:'' };
 let musicAudio=null;
+
+const isMobileView = () => window.matchMedia('(max-width: 900px)').matches;
 
 const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 const svgEl = (t,a) => { const e=document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; };
@@ -1955,7 +2051,7 @@ function renderRecentList(){
     const name = document.createElement('span'); name.className='ri-name'; name.textContent=f.name;
     const count = document.createElement('span'); count.className='ri-count'; count.textContent=f.documents.length;
     row.append(icon,name,count);
-    row.addEventListener('click', ()=>switchFolder(f.id));
+    row.addEventListener('click', ()=>{ switchFolder(f.id); closeMobileDrawers(); });
     recentListEl.appendChild(row);
   });
 }
@@ -1975,7 +2071,7 @@ function renderDocumentList(){
     const del = document.createElement('button'); del.className='doc-del'; del.textContent='×';
     del.addEventListener('click', e=>{ e.stopPropagation(); e.preventDefault(); deleteDocument(d.id); });
     item.append(t,dt,del);
-    item.addEventListener('click', ()=>switchDocument(d.id));
+    item.addEventListener('click', ()=>{ switchDocument(d.id); closeMobileDrawers(); });
     documentListEl.appendChild(item);
   });
 }
@@ -1997,7 +2093,7 @@ function renderTabsList(){
       renderTabsList(); renderPage(); applySettings(); resetCharTracking(); scheduleSave();
     });
     item.append(name, del);
-    item.addEventListener('click', ()=>switchTab(tab.id));
+    item.addEventListener('click', ()=>{ switchTab(tab.id); closeMobileDrawers(); });
     item.addEventListener('dblclick', e=>{
       e.stopPropagation();
       const n = prompt('重命名标签页', tab.name);
@@ -4524,6 +4620,11 @@ function refreshAllKeywords(){
   });
   scheduleSave();
 }
+function closeMobileDrawers(){
+  sidebarEl.classList.remove('mobile-open');
+  tabsSidebarEl.classList.remove('mobile-open');
+  mobileOverlayEl.classList.remove('show');
+}
 function switchFolder(id){
   if(!appState.folders.some(f=>f.id===id)) return;
   if(drawState.active) exitDrawMode();
@@ -4645,8 +4746,23 @@ function deleteFolder(id){
   resetCharTracking(); scheduleSave();
   toast('已删除');
 }
+function applyMobilePageWidth(){
+  if(isMobileView()){
+    pageEl.style.setProperty('width', '880px', 'important');
+    pageEl.style.setProperty('max-width', 'none', 'important');
+  } else {
+    pageEl.style.removeProperty('width');
+    pageEl.style.removeProperty('max-width');
+  }
+}
 function bindEvents(){
-  sbToggleBtn.addEventListener('click', toggleSidebarCollapse);
+  sbToggleBtn.addEventListener('click', ()=>{
+    if(isMobileView()){
+      closeMobileDrawers();
+    } else {
+      toggleSidebarCollapse();
+    }
+  });
   folderNameLabel.addEventListener('click', ()=>toggleRecentPanel());
   $('folderOverviewBtn').addEventListener('click', ()=>{
     renderFolderOverview();
@@ -4655,6 +4771,17 @@ function bindEvents(){
     $('folderOverviewGrid').style.display='';
     openModal('folderOverviewModal');
   });
+  $('mobileMenuBtn').addEventListener('click', ()=>{
+    tabsSidebarEl.classList.remove('mobile-open');
+    sidebarEl.classList.add('mobile-open');
+    mobileOverlayEl.classList.add('show');
+  });
+  $('mobileTabsBtn').addEventListener('click', ()=>{
+    sidebarEl.classList.remove('mobile-open');
+    tabsSidebarEl.classList.add('mobile-open');
+    mobileOverlayEl.classList.add('show');
+  });
+  mobileOverlayEl.addEventListener('click', closeMobileDrawers);
   $('newDocumentBtn').addEventListener('click', newDocument);
   $('newTabBtn').addEventListener('click', newTab);
   undoBtn.addEventListener('click', undo);
@@ -5014,13 +5141,18 @@ function bindEvents(){
     el.addEventListener('click', e=>{ if(e.target === el) closeModal(id); });
   });
   tabsCollapseBtn.addEventListener('click', ()=>{
-    const collapsed = tabsSidebarEl.classList.toggle('collapsed');
-    tabsCollapseBtn.textContent = collapsed ? '▶' : '◀';
+    if(isMobileView()){
+      closeMobileDrawers();
+    } else {
+      const collapsed = tabsSidebarEl.classList.toggle('collapsed');
+      tabsCollapseBtn.textContent = collapsed ? '▶' : '◀';
+    }
   });
   let rz;
   window.addEventListener('resize', ()=>{
     clearTimeout(rz);
     rz = setTimeout(()=>{
+      applyMobilePageWidth();
       drawAnnos(); recomputeAllWraps(currentTab());
       const t = currentTab(); if(t) renderTimeline(t);
       updatePageHeight();
@@ -5096,6 +5228,7 @@ function init(){
   noteTitleEl.value = doc.title;
   pushRecentFolder(folder.id);
   applyUIToDOM(); updateSettingsUI(); updateSoundUI(); applyPaperTexture();
+  applyMobilePageWidth();
   renderAll();
   applySettings();
   updateAuthUI();
@@ -5124,56 +5257,6 @@ function init(){
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
-})();
-  (function(){
-  'use strict';
-  var selColor = document.getElementById('selFontColor');
-  if(!selColor) return;
-  var savedRange = null;
-
-  selColor.addEventListener('mousedown', function(e){
-    try{
-      var sel = window.getSelection();
-      if(sel && sel.rangeCount > 0 && !sel.isCollapsed){
-        var range = sel.getRangeAt(0);
-        var el = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
-        var blockEl = el && el.closest ? el.closest('.block') : null;
-        if(blockEl) savedRange = range.cloneRange();
-        else savedRange = null;
-      } else {
-        savedRange = null;
-      }
-    }catch(err){ savedRange = null; }
-  });
-
-  selColor.addEventListener('input', function(){
-    if(!savedRange){
-      var msg = document.querySelector('.toast');
-      if(!msg){ msg = document.createElement('div'); msg.className = 'toast'; document.body.appendChild(msg); }
-      msg.textContent = '请先在文本框里选中文字';
-      requestAnimationFrame(function(){ msg.classList.add('show'); });
-      setTimeout(function(){ msg.classList.remove('show'); }, 2000);
-      return;
-    }
-    var el = savedRange.startContainer.nodeType === 1 ? savedRange.startContainer : savedRange.startContainer.parentElement;
-    var blockEl = el && el.closest ? el.closest('.block') : null;
-    if(!blockEl) return;
-    try{
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(savedRange);
-    }catch(err){}
-    try{ document.execCommand('styleWithCSS', false, true); }catch(err){}
-    try{ document.execCommand('foreColor', false, selColor.value); }catch(err){}
-    try{ document.execCommand('styleWithCSS', false, false); }catch(err){}
-    try{ blockEl.dispatchEvent(new Event('input', { bubbles: true })); }catch(err){}
-    var t = document.querySelector('.toast');
-    if(!t){ t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
-    t.textContent = '已改选中文字颜色';
-    requestAnimationFrame(function(){ t.classList.add('show'); });
-    setTimeout(function(){ t.classList.remove('show'); }, 1500);
-    savedRange = null;
-  });
 })();
 </script>
 </body>
