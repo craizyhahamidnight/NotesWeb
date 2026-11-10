@@ -34,12 +34,13 @@
   /* ---------- header ---------- */
   .hdr { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
   .hdr h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: .5px; }
-  .sub { color: var(--muted); font-size: 13px; }
+  .sub { color: var(--muted); font-size: 13px; line-height: 1.8; }
   .sub b { color: var(--text); font-weight: 600; }
   .letter-pill {
     display: inline-block; background: var(--accent); color: #fff;
     border-radius: 8px; padding: 2px 9px; font-weight: 700; font-size: 13px; margin-left: 6px;
   }
+  .holiday-pill { background: #6b4a12; }
 
   /* ---------- buttons / inputs ---------- */
   input, button, select { font: inherit; }
@@ -73,15 +74,30 @@
   .row label { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 7px; }
   .row label input { color: var(--text); }
 
+  .holiday-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .hol-chip {
+    background: #2a2416; border: 1px solid #4a3a18; color: #e0c48a;
+    border-radius: 8px; padding: 3px 4px 3px 10px; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .hol-chip button {
+    background: transparent; border: none; color: #b98a3e; padding: 0 3px;
+    cursor: pointer; font-size: 12px; border-radius: 4px;
+  }
+  .hol-chip button:hover { color: var(--red); background: transparent; }
+
   /* ---------- week strip ---------- */
   .week { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
   @media (max-width: 620px) { .week { grid-template-columns: repeat(2, 1fr); } }
   .day {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 11px 10px; min-height: 106px; display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 10px 11px; min-height: 116px; display: flex; flex-direction: column; gap: 4px;
     transition: .2s;
   }
   .day.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: #1a1f2e; }
+  .day.holiday { border-style: dashed; background: #161a14; }
+  .day.holiday.today { background: #1a2018; }
+  .day-head { display: flex; justify-content: space-between; align-items: center; }
   .day-name { font-size: 12px; color: var(--muted); }
   .day-date { font-size: 11px; color: #5c6377; }
   .day-letter {
@@ -90,7 +106,16 @@
     border-radius: 8px; padding: 2px 10px; letter-spacing: .5px;
   }
   .day.today .day-letter { background: var(--accent); color: #fff; }
-  .day-tasks { margin-top: auto; display: flex; flex-direction: column; gap: 3px; }
+  .day.holiday .day-letter { opacity: .38; }
+  .day.holiday.today .day-letter { opacity: .55; }
+  .hol-btn {
+    background: transparent; border: none; font-size: 12px; padding: 1px 4px;
+    border-radius: 6px; opacity: .3; cursor: pointer; line-height: 1.4; filter: grayscale(1);
+  }
+  .hol-btn:hover { opacity: .85; background: var(--card3); }
+  .hol-btn.on { opacity: 1; background: #3a2d12; filter: none; }
+  .hol-tag { font-size: 10.5px; color: #b98a3e; margin-top: -1px; }
+  .day-tasks { margin-top: auto; display: flex; flex-direction: column; gap: 3px; padding-top: 6px; }
   .mini {
     font-size: 11px; color: #b9c0d0; background: #1f242f; border-radius: 6px;
     padding: 2px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -183,6 +208,16 @@
     <p class="hint">
       例：6 天 cycle，9/1 设为 A Day → 9/1=A, 9/2=B, 9/3=C, 9/4=D, 9/5=E, 9/6=F, 9/7=A …<br>
       勾上「周末不推进」后，周六周日沿用周五的字母，cycle 只在上课日往前走。
+    </p>
+
+    <div class="row" style="margin-top:16px">
+      <label>放假日 <input id="setHoliday" type="date"></label>
+      <button id="btnAddHoliday" class="primary">添加放假</button>
+    </div>
+    <div id="holidayList" class="holiday-list"></div>
+    <p class="hint">
+      <b>放假日</b>不消耗 letter，cycle 会跳过这一天。比如 A Day 之后放一天假，假期结束的下一天还是 B Day。<br>
+      也可以直接点周视图卡片右上角的 🎉 按钮快速切换。
     </p>
   </div>
 
@@ -298,14 +333,15 @@ let state = load();
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { settings: { ...DEFAULT_SETTINGS }, tasks: [] };
+    if (!raw) return { settings: { ...DEFAULT_SETTINGS }, tasks: [], holidays: [] };
     const s = JSON.parse(raw);
     return {
       settings: { ...DEFAULT_SETTINGS, ...(s.settings || {}) },
-      tasks: Array.isArray(s.tasks) ? s.tasks : []
+      tasks: Array.isArray(s.tasks) ? s.tasks : [],
+      holidays: Array.isArray(s.holidays) ? s.holidays : []
     };
   } catch (e) {
-    return { settings: { ...DEFAULT_SETTINGS }, tasks: [] };
+    return { settings: { ...DEFAULT_SETTINGS }, tasks: [], holidays: [] };
   }
 }
 function save() {
@@ -314,12 +350,15 @@ function save() {
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
+function holidaySet() {
+  return new Set(state.holidays || []);
+}
 
 /* =========================================================
-   Letter cycle 计算
+   Letter cycle 计算（含放假日跳过）
    ========================================================= */
 function workdayDiff(a, b) {
-  // 返回从 a 到 b 之间经过的「工作日」天数（b 晚于 a 为正）
+  // 从 a 到 b 经过的「工作日」天数（含 b 不含 a）
   const start = new Date(a); start.setHours(0, 0, 0, 0);
   const end = new Date(b); end.setHours(0, 0, 0, 0);
   if (start.getTime() === end.getTime()) return 0;
@@ -340,12 +379,34 @@ function letterIndexFor(iso) {
   const n = Math.max(1, Number(cfg.cycleLength) || 1);
   const a = parseISO(cfg.anchorDate);
   const b = parseISO(iso);
-  let diff;
-  if (cfg.skipWeekend) {
-    diff = workdayDiff(a, b);
-  } else {
-    diff = Math.round((b - a) / 86400000);
+  const hols = holidaySet();
+
+  // 原始天数差（按规则：是否跳过周末）
+  let rawDiff;
+  if (cfg.skipWeekend) rawDiff = workdayDiff(a, b);
+  else rawDiff = Math.round((b - a) / 86400000);
+
+  // 扣除区间内（不含 anchor、含目标日）的放假日
+  let holCount = 0;
+  const start = new Date(a); start.setHours(0, 0, 0, 0);
+  const end = new Date(b); end.setHours(0, 0, 0, 0);
+  if (start.getTime() !== end.getTime() && hols.size) {
+    const step = start < end ? 1 : -1;
+    const cur = new Date(start);
+    let guard = 0;
+    while (cur.getTime() !== end.getTime() && guard++ < 5000) {
+      cur.setDate(cur.getDate() + step);
+      const curIso = toISO(cur);
+      if (!hols.has(curIso)) continue;
+      if (cfg.skipWeekend) {
+        const wd = cur.getDay();
+        if (wd === 0 || wd === 6) continue; // 周末本来就不计，避免重复扣除
+      }
+      holCount += step;
+    }
   }
+
+  const diff = rawDiff - holCount;
   return ((diff % n) + n) % n;
 }
 
@@ -362,15 +423,18 @@ function render() {
   renderWeek();
   renderStats();
   renderTasks();
+  renderHolidayList();
 }
 
 function renderHeader() {
   const now = new Date();
   const wd = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()];
   const iso = todayISO();
+  const isHol = holidaySet().has(iso);
   $('#todayLine').innerHTML =
     `今天 · ${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${wd}` +
-    `<span class="letter-pill">${letterLabel(iso)} Day</span>`;
+    `<span class="letter-pill">${letterLabel(iso)} Day</span>` +
+    (isHol ? `<span class="letter-pill holiday-pill">🎉 放假</span>` : '');
 }
 
 function renderWeek() {
@@ -378,6 +442,7 @@ function renderWeek() {
   const monday = getMonday(new Date());
   const names = ['周一', '周二', '周三', '周四', '周五'];
   const today = todayISO();
+  const hols = holidaySet();
   let html = '';
 
   for (let i = 0; i < 5; i++) {
@@ -385,6 +450,7 @@ function renderWeek() {
     d.setDate(d.getDate() + i);
     const iso = toISO(d);
     const isToday = iso === today;
+    const isHol = hols.has(iso);
 
     const dueToday = state.tasks
       .filter(t => !t.done && t.due && t.due.slice(0, 10) === iso)
@@ -400,10 +466,15 @@ function renderWeek() {
       ? `<span class="mini">+${dueToday.length - 3} 更多</span>` : '';
 
     html += `
-      <div class="day${isToday ? ' today' : ''}">
-        <div class="day-name">${names[i]}</div>
+      <div class="day${isToday ? ' today' : ''}${isHol ? ' holiday' : ''}">
+        <div class="day-head">
+          <span class="day-name">${names[i]}</span>
+          <button class="hol-btn${isHol ? ' on' : ''}" data-hol="${iso}"
+                  title="${isHol ? '取消放假' : '标记为放假日'}">🎉</button>
+        </div>
         <div class="day-date">${d.getMonth() + 1}/${d.getDate()}</div>
         <div class="day-letter">${letterLabel(iso)}</div>
+        ${isHol ? '<div class="hol-tag">放假 · cycle 跳过</div>' : ''}
         <div class="day-tasks">${minis}${more}</div>
       </div>`;
   }
@@ -506,6 +577,34 @@ function escapeHtml(s) {
 }
 
 /* =========================================================
+   放假日管理
+   ========================================================= */
+function toggleHoliday(iso) {
+  if (!Array.isArray(state.holidays)) state.holidays = [];
+  const i = state.holidays.indexOf(iso);
+  if (i >= 0) state.holidays.splice(i, 1);
+  else state.holidays.push(iso);
+  save();
+  render();
+}
+
+function renderHolidayList() {
+  const el = $('#holidayList');
+  if (!el) return;
+  const list = [...(state.holidays || [])].sort();
+  if (!list.length) {
+    el.innerHTML = '<span class="hint" style="margin:0">暂无放假日</span>';
+    return;
+  }
+  const wdn = ['日', '一', '二', '三', '四', '五', '六'];
+  el.innerHTML = list.map(iso => {
+    const d = parseISO(iso);
+    return `<span class="hol-chip">${d.getMonth() + 1}/${d.getDate()} 周${wdn[d.getDay()]}
+      <button data-delhol="${iso}" title="移除">✕</button></span>`;
+  }).join('');
+}
+
+/* =========================================================
    事件绑定
    ========================================================= */
 // --- 设置面板 ---
@@ -531,6 +630,31 @@ $('#setAnchor').addEventListener('change', e => {
 $('#setSkip').addEventListener('change', e => {
   state.settings.skipWeekend = e.target.checked;
   save(); render();
+});
+
+// 添加放假日
+$('#btnAddHoliday').addEventListener('click', () => {
+  const v = $('#setHoliday').value;
+  if (!v) return;
+  if (!Array.isArray(state.holidays)) state.holidays = [];
+  if (!state.holidays.includes(v)) {
+    state.holidays.push(v);
+    save(); render();
+  }
+  $('#setHoliday').value = '';
+});
+// 移除放假日（设置面板里的 chip）
+$('#holidayList').addEventListener('click', e => {
+  const b = e.target.closest('[data-delhol]');
+  if (!b) return;
+  toggleHoliday(b.dataset.delhol);
+});
+
+// --- 周视图：快速切换放假 ---
+$('#weekStrip').addEventListener('click', e => {
+  const btn = e.target.closest('[data-hol]');
+  if (!btn) return;
+  toggleHoliday(btn.dataset.hol);
 });
 
 // --- 添加任务 ---
